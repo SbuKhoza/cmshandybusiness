@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Projects from "./pages/Projects";
 import Auth from "./components/Auth";
 import Servicescms from "./pages/Servicescms";
+import NavbarCMS from "./pages/NavbarCMS";
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/servicecms" element={<Servicescms />} />
+            <Route path="/navbarcms" element={<NavbarCMS />} />
             <Route path="/auth" element={<Auth />} />
           </Routes>
         </div>

@@ -11,6 +11,7 @@ function SideNav() {
         <li><Link to="/projects">Projects</Link></li>
         <li><Link to="/auth">Log out</Link></li>
         <li><Link to="/servicecms">Services</Link></li>
+        <li><Link to="/navbarcms">Nav</Link></li>
       </ul>
     </nav>
   );
