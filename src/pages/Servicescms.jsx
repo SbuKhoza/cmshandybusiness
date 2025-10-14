@@ -1,142 +1,124 @@
-import React, { useEffect, useState } from "react";
-import { db, storage, auth } from "../config";
-import {
-  doc,
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-  setDoc,
-  updateDoc,
-  addDoc,
-  deleteDoc,
-  getDoc,
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+"use client"
+
+import { useEffect, useState } from "react"
+import { useSelector } from "react-redux"
+import { db, storage } from "../config"
+import { doc, collection, query, orderBy, onSnapshot, setDoc, addDoc, deleteDoc } from "firebase/firestore"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 
 function Servicescms() {
-  const [user, setUser] = useState(null);
-  const [header, setHeader] = useState({ slogan: "", shortDescription: "" });
-  const [services, setServices] = useState([]);
-  const [editingHeader, setEditingHeader] = useState(false);
-  const [editServiceId, setEditServiceId] = useState(null);
+  const { currentTenantId } = useSelector((state) => state.tenant)
+
+  const [header, setHeader] = useState({ slogan: "", shortDescription: "" })
+  const [services, setServices] = useState([])
+  const [editingHeader, setEditingHeader] = useState(false)
+  const [editServiceId, setEditServiceId] = useState(null)
   const [newService, setNewService] = useState({
     title: "",
     description: "",
     phone: "",
     order: 0,
-  });
+  })
 
-  // ✅ Watch auth
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(setUser);
-    return unsub;
-  }, []);
-
-  // ✅ Fetch Firestore data
-  useEffect(() => {
-    if (!user) return;
+    if (!currentTenantId) return
 
     // Header doc
-    const headerRef = doc(db, "users", user.uid, "servicesData", "header");
+    const headerRef = doc(db, "tenants", currentTenantId, "data", "servicesHeader")
 
     const unsubHeader = onSnapshot(headerRef, async (snap) => {
       if (snap.exists()) {
-        setHeader(snap.data());
+        setHeader(snap.data())
       } else {
-        // auto-create a blank header doc if it doesn’t exist
-        await setDoc(headerRef, { slogan: "", shortDescription: "" });
-        setHeader({ slogan: "", shortDescription: "" });
+        await setDoc(headerRef, { slogan: "", shortDescription: "" })
+        setHeader({ slogan: "", shortDescription: "" })
       }
-    });
+    })
 
     // Services list
-    const q = query(
-      collection(db, "users", user.uid, "services"),
-      orderBy("order", "asc")
-    );
+    const servicesRef = collection(db, "tenants", currentTenantId, "services")
+    const q = query(servicesRef, orderBy("order", "asc"))
     const unsubServices = onSnapshot(q, (snap) => {
-      setServices(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
+      setServices(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+    })
 
     return () => {
-      unsubHeader();
-      unsubServices();
-    };
-  }, [user]);
+      unsubHeader()
+      unsubServices()
+    }
+  }, [currentTenantId])
 
-  // ✅ Save or create header
   const handleSaveHeader = async () => {
-    if (!user) return;
+    if (!currentTenantId) return
     try {
-      const headerRef = doc(db, "users", user.uid, "servicesData", "header");
-      await setDoc(headerRef, header, { merge: true });
-      setEditingHeader(false);
-      alert("✅ Header saved successfully!");
+      const headerRef = doc(db, "tenants", currentTenantId, "data", "servicesHeader")
+      await setDoc(headerRef, header, { merge: true })
+      setEditingHeader(false)
+      alert("Header saved successfully!")
     } catch (err) {
-      console.error("Error saving header:", err);
-      alert("❌ Failed to save header.");
+      console.error("Error saving header:", err)
+      alert("Failed to save header.")
     }
-  };
+  }
 
-  // ✅ Save service edits
   const handleSaveService = async (id, data) => {
-    if (!user) return;
+    if (!currentTenantId) return
     try {
-      const serviceRef = doc(db, "users", user.uid, "services", id);
-      await setDoc(serviceRef, data, { merge: true });
-      setEditServiceId(null);
+      const serviceRef = doc(db, "tenants", currentTenantId, "services", id)
+      await setDoc(serviceRef, data, { merge: true })
+      setEditServiceId(null)
     } catch (err) {
-      console.error("Error saving service:", err);
-      alert("❌ Failed to save service.");
+      console.error("Error saving service:", err)
+      alert("Failed to save service.")
     }
-  };
+  }
 
-  // ✅ Add new service
   const handleAddService = async () => {
-    if (!user || !newService.title) return alert("Enter a title first.");
+    if (!currentTenantId || !newService.title) return alert("Enter a title first.")
     try {
-      await addDoc(collection(db, "users", user.uid, "services"), newService);
-      setNewService({ title: "", description: "", phone: "", order: 0 });
-      alert("✅ Service added!");
+      await addDoc(collection(db, "tenants", currentTenantId, "services"), newService)
+      setNewService({ title: "", description: "", phone: "", order: 0 })
+      alert("Service added!")
     } catch (err) {
-      console.error("Error adding service:", err);
-      alert("❌ Could not add service.");
+      console.error("Error adding service:", err)
+      alert("Could not add service.")
     }
-  };
+  }
 
-  // ✅ Delete service
   const handleDelete = async (id) => {
-    if (!user) return;
+    if (!currentTenantId) return
     try {
-      await deleteDoc(doc(db, "users", user.uid, "services", id));
+      await deleteDoc(doc(db, "tenants", currentTenantId, "services", id))
     } catch (err) {
-      console.error("Error deleting service:", err);
+      console.error("Error deleting service:", err)
     }
-  };
+  }
 
-  // ✅ Upload service image
   const handleImageUpload = async (e, serviceId) => {
-    if (!user) return;
-    const file = e.target.files[0];
-    if (!file) return;
+    if (!currentTenantId) return
+    const file = e.target.files[0]
+    if (!file) return
 
     try {
-      const storageRef = ref(storage, `services/${user.uid}/${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      const storageRef = ref(storage, `tenants/${currentTenantId}/services/${file.name}`)
+      await uploadBytes(storageRef, file)
+      const url = await getDownloadURL(storageRef)
 
-      const serviceRef = doc(db, "users", user.uid, "services", serviceId);
-      await setDoc(serviceRef, { image: url }, { merge: true });
+      const serviceRef = doc(db, "tenants", currentTenantId, "services", serviceId)
+      await setDoc(serviceRef, { image: url }, { merge: true })
     } catch (err) {
-      console.error("Image upload failed:", err);
-      alert("❌ Image upload failed. Check your storage rules.");
+      console.error("Image upload failed:", err)
+      alert("Image upload failed. Check your storage rules.")
     }
-  };
+  }
+
+  if (!currentTenantId) {
+    return <div>Please select a tenant first.</div>
+  }
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>🧩 Services CMS</h2>
+      <h2>Services CMS</h2>
 
       {/* Header section */}
       <div>
@@ -147,24 +129,24 @@ function Servicescms() {
               type="text"
               placeholder="Slogan"
               value={header.slogan}
-              onChange={(e) =>
-                setHeader({ ...header, slogan: e.target.value })
-              }
+              onChange={(e) => setHeader({ ...header, slogan: e.target.value })}
             />
             <textarea
               placeholder="Short description"
               value={header.shortDescription}
-              onChange={(e) =>
-                setHeader({ ...header, shortDescription: e.target.value })
-              }
+              onChange={(e) => setHeader({ ...header, shortDescription: e.target.value })}
             />
             <button onClick={handleSaveHeader}>Save</button>
             <button onClick={() => setEditingHeader(false)}>Cancel</button>
           </div>
         ) : (
           <div>
-            <p><strong>Slogan:</strong> {header.slogan}</p>
-            <p><strong>Short Description:</strong> {header.shortDescription}</p>
+            <p>
+              <strong>Slogan:</strong> {header.slogan}
+            </p>
+            <p>
+              <strong>Short Description:</strong> {header.shortDescription}
+            </p>
             <button onClick={() => setEditingHeader(true)}>Edit</button>
           </div>
         )}
@@ -190,22 +172,14 @@ function Servicescms() {
                 type="text"
                 value={service.title}
                 onChange={(e) =>
-                  setServices((prev) =>
-                    prev.map((s) =>
-                      s.id === service.id ? { ...s, title: e.target.value } : s
-                    )
-                  )
+                  setServices((prev) => prev.map((s) => (s.id === service.id ? { ...s, title: e.target.value } : s)))
                 }
               />
               <textarea
                 value={service.description}
                 onChange={(e) =>
                   setServices((prev) =>
-                    prev.map((s) =>
-                      s.id === service.id
-                        ? { ...s, description: e.target.value }
-                        : s
-                    )
+                    prev.map((s) => (s.id === service.id ? { ...s, description: e.target.value } : s)),
                   )
                 }
               />
@@ -214,11 +188,7 @@ function Servicescms() {
                 placeholder="Phone"
                 value={service.phone || ""}
                 onChange={(e) =>
-                  setServices((prev) =>
-                    prev.map((s) =>
-                      s.id === service.id ? { ...s, phone: e.target.value } : s
-                    )
-                  )
+                  setServices((prev) => prev.map((s) => (s.id === service.id ? { ...s, phone: e.target.value } : s)))
                 }
               />
               <input
@@ -227,30 +197,23 @@ function Servicescms() {
                 value={service.order || 0}
                 onChange={(e) =>
                   setServices((prev) =>
-                    prev.map((s) =>
-                      s.id === service.id
-                        ? { ...s, order: parseInt(e.target.value) }
-                        : s
-                    )
+                    prev.map((s) => (s.id === service.id ? { ...s, order: Number.parseInt(e.target.value) } : s)),
                   )
                 }
               />
-              <input
-                type="file"
-                onChange={(e) => handleImageUpload(e, service.id)}
-              />
-              <button onClick={() => handleSaveService(service.id, service)}>
-                Save
-              </button>
+              <input type="file" onChange={(e) => handleImageUpload(e, service.id)} />
+              <button onClick={() => handleSaveService(service.id, service)}>Save</button>
               <button onClick={() => setEditServiceId(null)}>Cancel</button>
             </div>
           ) : (
             <div>
-              <p><strong>{service.title}</strong></p>
+              <p>
+                <strong>{service.title}</strong>
+              </p>
               <p>{service.description}</p>
               {service.image ? (
                 <img
-                  src={service.image}
+                  src={service.image || "/placeholder.svg"}
                   alt="service"
                   style={{
                     width: "120px",
@@ -278,24 +241,18 @@ function Servicescms() {
         type="text"
         placeholder="Service title"
         value={newService.title}
-        onChange={(e) =>
-          setNewService({ ...newService, title: e.target.value })
-        }
+        onChange={(e) => setNewService({ ...newService, title: e.target.value })}
       />
       <textarea
         placeholder="Service description"
         value={newService.description}
-        onChange={(e) =>
-          setNewService({ ...newService, description: e.target.value })
-        }
+        onChange={(e) => setNewService({ ...newService, description: e.target.value })}
       />
       <input
         type="text"
         placeholder="Phone number"
         value={newService.phone}
-        onChange={(e) =>
-          setNewService({ ...newService, phone: e.target.value })
-        }
+        onChange={(e) => setNewService({ ...newService, phone: e.target.value })}
       />
       <input
         type="number"
@@ -304,13 +261,13 @@ function Servicescms() {
         onChange={(e) =>
           setNewService({
             ...newService,
-            order: parseInt(e.target.value),
+            order: Number.parseInt(e.target.value),
           })
         }
       />
       <button onClick={handleAddService}>Add Service</button>
     </div>
-  );
+  )
 }
 
-export default Servicescms;
+export default Servicescms

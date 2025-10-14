@@ -1,12 +1,11 @@
-// src/cms/Home.jsx
-import React, { useState, useEffect } from "react";
-import { auth, db, storage } from "../config";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { db, storage } from "../config";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { doc, setDoc, getDoc, collection, addDoc } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 function Home() {
-  const [user, setUser] = useState(null);
+  const { currentTenantId } = useSelector((state) => state.tenant);
 
   // Logo Management
   const [useImage, setUseImage] = useState(false);
@@ -16,7 +15,7 @@ function Home() {
 
   // Homepage Management
   const [homeData, setHomeData] = useState({
-    bannerImage: "",
+    bannerImages: [],
     rightImage: "",
     tagline: "",
     slogan: "",
@@ -27,26 +26,21 @@ function Home() {
     shortDescriptionColor: "#444444",
   });
 
-  const [bannerFile, setBannerFile] = useState(null);
+  const [bannerFiles, setBannerFiles] = useState([]);
   const [rightFile, setRightFile] = useState(null);
 
   // Navbar colors
   const [navbarColors, setNavbarColors] = useState({
-    background: "#rrggbb",
-    name: "transparent",
+    background: "transparent",
     links: "#ffffff",
     logoText: "#ffffff",
   });
 
   const [loading, setLoading] = useState(false);
 
-  // Rating users
-  const [ratingUserEmail, setRatingUserEmail] = useState("");
-  const [addingUser, setAddingUser] = useState(false);
-
-  // Named preset colors
+  // Preset colors
   const presetColors = [
-    { color: "#rrggbb", name: "Transparent" },
+    { color: "transparent", name: "Transparent" },
     { color: "#000000", name: "Black" },
     { color: "#FFFFFF", name: "White" },
     { color: "#FF0000", name: "Red" },
@@ -61,24 +55,36 @@ function Home() {
     { color: "#FFD700", name: "Gold" },
   ];
 
-  // Auth + Load data
+  // Load data
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+    if (!currentTenantId) return;
 
-      if (currentUser) {
-        // Load logo
-        const logoRef = doc(db, "logos", currentUser.uid);
+    const loadData = async () => {
+      try {
+        // Logo
+        const logoRef = doc(db, "tenants", currentTenantId, "data", "logo");
         const logoSnap = await getDoc(logoRef);
-        if (logoSnap.exists()) setSavedLogo(logoSnap.data());
+        if (logoSnap.exists()) {
+          setSavedLogo(logoSnap.data());
+          if (logoSnap.data().type === "text") {
+            setLogoText(logoSnap.data().text || "");
+            setUseImage(false);
+          } else {
+            setUseImage(true);
+          }
+        }
 
-        // Load homepage
-        const homepageRef = doc(db, "homepage", currentUser.uid);
+        // Homepage
+        const homepageRef = doc(db, "tenants", currentTenantId, "data", "homepage");
         const homepageSnap = await getDoc(homepageRef);
         if (homepageSnap.exists()) {
           const data = homepageSnap.data();
           setHomeData({
-            bannerImage: data.bannerImage || "",
+            bannerImages: Array.isArray(data.bannerImages)
+              ? data.bannerImages
+              : data.bannerImage
+              ? [data.bannerImage]
+              : [],
             rightImage: data.rightImage || "",
             tagline: data.tagline || "",
             slogan: data.slogan || "",
@@ -90,43 +96,60 @@ function Home() {
           });
         }
 
-        // Load navbar colors
-        const navbarRef = doc(db, "navbarColors", currentUser.uid);
+        // Navbar colors
+        const navbarRef = doc(db, "tenants", currentTenantId, "data", "navbarColors");
         const navbarSnap = await getDoc(navbarRef);
         if (navbarSnap.exists()) setNavbarColors(navbarSnap.data());
-      } else {
-        setSavedLogo(null);
-        setHomeData({
-          bannerImage: "",
-          rightImage: "",
-          tagline: "",
-          slogan: "",
-          shortDescription: "",
-          rightImageFit: "cover",
-          taglineColor: "#222222",
-          sloganColor: "#222222",
-          shortDescriptionColor: "#444444",
-        });
-        setNavbarColors({
-          background: "#rrggbb",
-          links: "#ffffff",
-          logoText: "#ffffff",
-        });
+      } catch (error) {
+        console.error("Error loading data:", error);
       }
-    });
+    };
 
-    return () => unsubscribe();
-  }, []);
+    loadData();
+  }, [currentTenantId]);
 
-  // Save logo
+  // Helper to convert hex to rgba
+  const hexToRgba = (hex, alpha = 1) => {
+    if (hex === "transparent") return "transparent";
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  // Helper to extract alpha from rgba or return 1
+  const getAlphaFromColor = (color) => {
+    if (!color || color === "transparent") return 0;
+    const match = color.match(/rgba?\([\d\s,]+,\s*([\d.]+)\)/);
+    return match ? parseFloat(match[1]) : 1;
+  };
+
+  // Helper to get hex from rgba or hex
+  const getHexFromColor = (color) => {
+    if (!color || color === "transparent") return "#000000";
+    if (color.startsWith("#")) return color;
+    const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+      const r = parseInt(match[1]).toString(16).padStart(2, "0");
+      const g = parseInt(match[2]).toString(16).padStart(2, "0");
+      const b = parseInt(match[3]).toString(16).padStart(2, "0");
+      return `#${r}${g}${b}`;
+    }
+    return "#000000";
+  };
+
+  // ==========================
+  // 🔹 Save Logo
+  // ==========================
   const handleSaveLogo = async () => {
-    if (!user) return alert("Please log in first.");
+    if (!currentTenantId) return alert("No tenant selected.");
     setLoading(true);
     try {
-      const logoRef = doc(db, "logos", user.uid);
+      const logoRef = doc(db, "tenants", currentTenantId, "data", "logo");
       let logoData = {};
+
       if (useImage && logoFile) {
-        const fileRef = ref(storage, `logos/${user.uid}/${logoFile.name}`);
+        const fileRef = ref(storage, `logos/${currentTenantId}/${logoFile.name}`);
         await uploadBytes(fileRef, logoFile);
         const imageUrl = await getDownloadURL(fileRef);
         logoData = { type: "image", url: imageUrl };
@@ -137,315 +160,335 @@ function Home() {
         setLoading(false);
         return;
       }
-      await setDoc(logoRef, logoData);
+
+      await setDoc(logoRef, logoData, { merge: true });
       setSavedLogo(logoData);
-      alert("✅ Logo saved successfully!");
+      alert("Logo saved successfully!");
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to save logo.");
+      alert("Failed to save logo.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Save homepage
+  // ==========================
+  // 🔹 Save Homepage (MERGE FIX)
+  // ==========================
   const handleSaveHome = async () => {
-    if (!user) return alert("Please log in first.");
+    if (!currentTenantId) return alert("No tenant selected.");
     setLoading(true);
     try {
-      const homepageRef = doc(db, "homepage", user.uid);
-      let updatedData = { ...homeData };
+      const homepageRef = doc(db, "tenants", currentTenantId, "data", "homepage");
+      const homepageSnap = await getDoc(homepageRef);
+      const existingData = homepageSnap.exists() ? homepageSnap.data() : {};
 
-      if (bannerFile) {
-        const bannerRef = ref(storage, `homepage/${user.uid}/banner.jpg`);
-        await uploadBytes(bannerRef, bannerFile);
-        updatedData.bannerImage = await getDownloadURL(bannerRef);
+      let updatedData = { ...existingData, ...homeData };
+
+      // ✅ Upload banner images
+      if (bannerFiles && bannerFiles.length > 0) {
+        const uploadedUrls = [];
+        for (let i = 0; i < bannerFiles.length; i++) {
+          const file = bannerFiles[i];
+          const bannerRef = ref(storage, `homepage/${currentTenantId}/banner_${Date.now()}_${i}.jpg`);
+          await uploadBytes(bannerRef, file);
+          const url = await getDownloadURL(bannerRef);
+          uploadedUrls.push(url);
+        }
+        updatedData.bannerImages = [...(existingData.bannerImages || []), ...uploadedUrls];
       }
+
+      // ✅ Upload right image
       if (rightFile) {
-        const rightRef = ref(storage, `homepage/${user.uid}/right.jpg`);
+        const rightRef = ref(storage, `homepage/${currentTenantId}/right.jpg`);
         await uploadBytes(rightRef, rightFile);
         updatedData.rightImage = await getDownloadURL(rightRef);
       }
 
-      await setDoc(homepageRef, updatedData);
-      alert("✅ Homepage content saved!");
+      // ✅ Merge into Firestore instead of overwriting
+      await setDoc(homepageRef, updatedData, { merge: true });
+
+      alert("Homepage content saved!");
+      setBannerFiles([]);
+      setRightFile(null);
+      setHomeData(updatedData);
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to save homepage content.");
+      alert("Failed to save homepage content.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Add rating user
-  const handleAddUserForRating = async () => {
-    if (!user) return alert("Please log in first.");
-    if (!ratingUserEmail.trim()) return alert("Enter a user email.");
-    setAddingUser(true);
+  const handleSaveNavbarColors = async () => {
+    if (!currentTenantId) return alert("No tenant selected.");
     try {
-      const ratingsCollection = collection(db, "users-rating");
-      await addDoc(ratingsCollection, {
-        email: ratingUserEmail.trim(),
-        adminId: user.uid,
-        createdAt: new Date(),
-      });
-      alert(`✅ ${ratingUserEmail} added to rating list.`);
-      setRatingUserEmail("");
+      const navbarRef = doc(db, "tenants", currentTenantId, "data", "navbarColors");
+      await setDoc(navbarRef, navbarColors, { merge: true });
+      alert("Navbar colors saved!");
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to add user.");
-    } finally {
-      setAddingUser(false);
+      alert("Failed to save navbar colors.");
     }
   };
 
-  // Color picker renderer with named colors
-  const renderColorPicker = (label, field, state, setState) => (
-    <div style={{ marginTop: "15px" }}>
-      <label>{label}:</label>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-        {/* Custom color picker */}
-        <input
-          type="color"
-          value={state[field]}
-          onChange={(e) => setState({ ...state, [field]: e.target.value })}
-        />
-        {/* Transparent option */}
-        <div
-          onClick={() => setState({ ...state, [field]: "#rrggbb" })}
-          style={{
-            width: "22px",
-            height: "22px",
-            backgroundColor: "#rrggbb",
-            border: "1px solid #ccc",
-            cursor: "pointer",
-            borderRadius: "50%",
-          }}
-          title="Transparent"
-        />
-        {/* Preset colors with names */}
-        {presetColors.map(({ color, name }) => (
-          <div
-            key={color}
-            onClick={() => setState({ ...state, [field]: color })}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              cursor: "pointer",
-              gap: "4px",
+  const handleRemoveBannerImage = (index) => {
+    setHomeData({
+      ...homeData,
+      bannerImages: homeData.bannerImages.filter((_, i) => i !== index),
+    });
+  };
+
+  // Color picker renderer with transparency control
+  const renderColorPicker = (label, field, state, setState) => {
+    const currentColor = state[field] || "#000000";
+    const hexColor = getHexFromColor(currentColor);
+    const alphaValue = getAlphaFromColor(currentColor);
+
+    const updateColor = (hex, alpha) => {
+      const newColor = alpha < 1 ? hexToRgba(hex, alpha) : hex;
+      setState({ ...state, [field]: newColor });
+    };
+
+    return (
+      <div style={{ marginTop: "15px" }}>
+        <label>{label}:</label>
+        
+        {/* Custom Color Input and Transparency */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", marginTop: "8px", marginBottom: "8px" }}>
+          <input
+            type="color"
+            value={hexColor}
+            onChange={(e) => updateColor(e.target.value, alphaValue)}
+            style={{ width: "50px", height: "35px", cursor: "pointer" }}
+          />
+          <input
+            type="text"
+            placeholder="#000000"
+            value={currentColor}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val.startsWith("#") || val.startsWith("rgb") || val === "transparent") {
+                setState({ ...state, [field]: val });
+              }
             }}
-          >
-            <div
-              style={{
-                width: "22px",
-                height: "22px",
-                backgroundColor: color,
-                border: "1px solid #ccc",
-                borderRadius: "50%",
-              }}
+            style={{ 
+              padding: "6px 10px", 
+              width: "150px",
+              border: "1px solid #ccc",
+              borderRadius: "4px"
+            }}
+          />
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <label style={{ fontSize: "11px", margin: 0 }}>Opacity: {Math.round(alphaValue * 100)}%</label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={Math.round(alphaValue * 100)}
+              onChange={(e) => updateColor(hexColor, parseInt(e.target.value) / 100)}
+              style={{ width: "120px", cursor: "pointer" }}
             />
-            <span style={{ fontSize: "12px" }}>{name}</span>
           </div>
-        ))}
+        </div>
+
+        {/* Preset Colors */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          {presetColors.map(({ color, name }) => (
+            <div
+              key={color}
+              onClick={() => setState({ ...state, [field]: color })}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                gap: "4px",
+              }}
+            >
+              <div
+                style={{
+                  width: "22px",
+                  height: "22px",
+                  backgroundColor: color,
+                  border: "1px solid #ccc",
+                  borderRadius: "50%",
+                }}
+              />
+              <span style={{ fontSize: "12px" }}>{name}</span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  if (!currentTenantId) {
+    return <div>Please select a tenant first.</div>;
+  }
 
   return (
     <div style={{ padding: "20px" }}>
       <h2>CMS Dashboard</h2>
 
-      {user ? (
-        <>
-          {/* Logo Management */}
-          <div style={{ marginBottom: "40px" }}>
-            <h3>Logo Management</h3>
-            <button onClick={() => setUseImage(!useImage)}>
-              {useImage ? "Use Text Logo" : "Use Image Logo"}
-            </button>
-            {useImage ? (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setLogoFile(e.target.files[0])}
-                style={{ marginTop: "10px" }}
-              />
+      {/* Logo Section */}
+      <div style={{ marginBottom: "40px" }}>
+        <h3>Logo Management</h3>
+        <button onClick={() => setUseImage(!useImage)}>
+          {useImage ? "Use Text Logo" : "Use Image Logo"}
+        </button>
+        {useImage ? (
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setLogoFile(e.target.files[0])}
+            style={{ marginTop: "10px" }}
+          />
+        ) : (
+          <input
+            type="text"
+            placeholder="Enter Logo Text"
+            value={logoText}
+            onChange={(e) => setLogoText(e.target.value)}
+            style={{ marginTop: "10px" }}
+          />
+        )}
+        <button onClick={handleSaveLogo} disabled={loading} style={{ marginTop: "10px" }}>
+          {loading ? "Saving..." : "Save Logo"}
+        </button>
+
+        {savedLogo && (
+          <div style={{ marginTop: "20px" }}>
+            <h4>Saved Logo Preview:</h4>
+            {savedLogo.type === "text" ? (
+              <h2>{savedLogo.text}</h2>
             ) : (
-              <input
-                type="text"
-                placeholder="Enter Logo Text"
-                value={logoText}
-                onChange={(e) => setLogoText(e.target.value)}
-                style={{ marginTop: "10px" }}
+              <img
+                src={savedLogo.url || "/placeholder.svg"}
+                alt="Logo"
+                style={{ width: "120px", borderRadius: "8px", border: "1px solid #ccc" }}
               />
             )}
-            <button onClick={handleSaveLogo} disabled={loading} style={{ marginTop: "10px" }}>
-              {loading ? "Saving..." : "Save Logo"}
-            </button>
+          </div>
+        )}
+      </div>
 
-            {savedLogo && (
-              <div style={{ marginTop: "20px" }}>
-                <h4>Saved Logo Preview:</h4>
-                {savedLogo.type === "text" ? (
-                  <h2>{savedLogo.text}</h2>
-                ) : (
+      {/* Homepage Management */}
+      <div style={{ marginBottom: "40px" }}>
+        <h3>Homepage Management</h3>
+
+        <label>Tagline</label>
+        <input
+          type="text"
+          value={homeData.tagline}
+          onChange={(e) => setHomeData({ ...homeData, tagline: e.target.value })}
+        />
+        {renderColorPicker("Tagline Color", "taglineColor", homeData, setHomeData)}
+
+        <label style={{ marginTop: "10px" }}>Slogan</label>
+        <input
+          type="text"
+          value={homeData.slogan}
+          onChange={(e) => setHomeData({ ...homeData, slogan: e.target.value })}
+        />
+        {renderColorPicker("Slogan Color", "sloganColor", homeData, setHomeData)}
+
+        <label style={{ marginTop: "10px" }}>Short Description</label>
+        <textarea
+          value={homeData.shortDescription}
+          onChange={(e) => setHomeData({ ...homeData, shortDescription: e.target.value })}
+        />
+        {renderColorPicker("Short Description Color", "shortDescriptionColor", homeData, setHomeData)}
+
+        {/* Banner Upload */}
+        <div style={{ marginTop: "20px" }}>
+          <label>Banner Images:</label>
+          <input type="file" multiple accept="image/*" onChange={(e) => setBannerFiles(Array.from(e.target.files))} />
+          {homeData.bannerImages?.length > 0 && (
+            <div style={{ marginTop: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              {homeData.bannerImages.map((img, index) => (
+                <div key={index} style={{ position: "relative" }}>
                   <img
-                    src={savedLogo.url}
-                    alt="Logo"
-                    style={{ width: "120px", borderRadius: "8px", border: "1px solid #ccc" }}
+                    src={img}
+                    alt={`Banner ${index}`}
+                    style={{
+                      width: "150px",
+                      height: "100px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                    }}
                   />
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Homepage Management */}
-          <div style={{ marginBottom: "40px" }}>
-            <h3>Homepage Management</h3>
-
-            <label>Tagline</label>
-            <input
-              type="text"
-              placeholder="e.g. Reliable 24/7"
-              value={homeData.tagline}
-              onChange={(e) => setHomeData({ ...homeData, tagline: e.target.value })}
-            />
-            {renderColorPicker("Tagline Color", "taglineColor", homeData, setHomeData)}
-
-            <label style={{ marginTop: "10px" }}>Slogan</label>
-            <input
-              type="text"
-              placeholder="e.g. The best plumber you need"
-              value={homeData.slogan}
-              onChange={(e) => setHomeData({ ...homeData, slogan: e.target.value })}
-            />
-            {renderColorPicker("Slogan Color", "sloganColor", homeData, setHomeData)}
-
-            <label style={{ marginTop: "10px" }}>Short Description</label>
-            <textarea
-              placeholder="Enter a short description"
-              value={homeData.shortDescription}
-              onChange={(e) =>
-                setHomeData({ ...homeData, shortDescription: e.target.value })
-              }
-            />
-            {renderColorPicker(
-              "Short Description Color",
-              "shortDescriptionColor",
-              homeData,
-              setHomeData
-            )}
-
-            <div style={{ marginTop: "20px" }}>
-              <label>Banner Image:</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setBannerFile(e.target.files[0])}
-              />
-              {homeData.bannerImage && (
-                <img
-                  src={homeData.bannerImage}
-                  alt="Banner"
-                  style={{
-                    width: "200px",
-                    marginTop: "10px",
-                    borderRadius: "8px",
-                    border: "1px solid #ccc",
-                  }}
-                />
-              )}
+                  <button
+                    onClick={() => handleRemoveBannerImage(index)}
+                    style={{
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      backgroundColor: "red",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "25px",
+                      height: "25px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
             </div>
+          )}
+        </div>
 
-            <div style={{ marginTop: "20px" }}>
-              <label>Right Image:</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setRightFile(e.target.files[0])}
-              />
-              {homeData.rightImage && (
-                <img
-                  src={homeData.rightImage}
-                  alt="Right"
-                  style={{
-                    width: "200px",
-                    marginTop: "10px",
-                    borderRadius: "8px",
-                    border: "1px solid #ccc",
-                    objectFit: homeData.rightImageFit || "cover",
-                  }}
-                />
-              )}
-              <div style={{ marginTop: "10px" }}>
-                <label>Right Image Fit:</label>
-                <select
-                  value={homeData.rightImageFit || "cover"}
-                  onChange={(e) =>
-                    setHomeData({ ...homeData, rightImageFit: e.target.value })
-                  }
-                >
-                  <option value="cover">Cover</option>
-                  <option value="contain">Contain</option>
-                  <option value="fill">Fill</option>
-                  <option value="none">None</option>
-                  <option value="scale-down">Scale Down</option>
-                </select>
-              </div>
-            </div>
-
-            <button
-              onClick={handleSaveHome}
-              disabled={loading}
-              style={{ marginTop: "20px" }}
-            >
-              {loading ? "Saving..." : "Save Homepage"}</button>
-          </div>
-
-          {/* Navbar Colors */}
-          <div style={{ marginBottom: "40px" }}>
-            <h3>Navbar Colors</h3>
-            {renderColorPicker("Background Color", "background", navbarColors, setNavbarColors)}
-            {renderColorPicker("Link Color", "links", navbarColors, setNavbarColors)}
-            {renderColorPicker("Logo Text Color", "logoText", navbarColors, setNavbarColors)}
-
-            <button
-              onClick={async () => {
-                if (!user) return alert("Please log in first.");
-                try {
-                  const navbarRef = doc(db, "navbarColors", user.uid);
-                  await setDoc(navbarRef, navbarColors);
-                  alert("✅ Navbar colors saved!");
-                } catch (err) {
-                  console.error(err);
-                  alert("❌ Failed to save navbar colors.");
-                }
+        {/* Right Image */}
+        <div style={{ marginTop: "20px" }}>
+          <label>Right Image:</label>
+          <input type="file" accept="image/*" onChange={(e) => setRightFile(e.target.files[0])} />
+          {homeData.rightImage && (
+            <img
+              src={homeData.rightImage}
+              alt="Right"
+              style={{
+                width: "200px",
+                marginTop: "10px",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+                objectFit: homeData.rightImageFit || "cover",
               }}
-              disabled={loading}
-              style={{ marginTop: "10px" }}
-            >
-              Save Navbar Colors
-            </button>
-          </div>
-
-          {/* User Rating Access */}
-          <div>
-            <h3>User Rating Access</h3>
-            <p>Add users who can rate your service.</p>
-            <input
-              type="email"
-              placeholder="Enter user email"
-              value={ratingUserEmail}
-              onChange={(e) => setRatingUserEmail(e.target.value)}
             />
-            <button onClick={handleAddUserForRating} disabled={addingUser} style={{ marginTop: "10px" }}>
-              {addingUser ? "Adding..." : "Add User to Rating List"}
-            </button>
+          )}
+          <div style={{ marginTop: "10px" }}>
+            <label>Right Image Fit:</label>
+            <select
+              value={homeData.rightImageFit || "cover"}
+              onChange={(e) => setHomeData({ ...homeData, rightImageFit: e.target.value })}
+            >
+              <option value="cover">Cover</option>
+              <option value="contain">Contain</option>
+              <option value="fill">Fill</option>
+              <option value="none">None</option>
+              <option value="scale-down">Scale Down</option>
+            </select>
           </div>
-        </>
-      ) : (
-        <p>Please log in to manage your CMS.</p>
-      )}
+        </div>
+
+        <button onClick={handleSaveHome} disabled={loading} style={{ marginTop: "20px" }}>
+          {loading ? "Saving..." : "Save Homepage"}
+        </button>
+      </div>
+
+      {/* Navbar Colors */}
+      <div style={{ marginBottom: "40px" }}>
+        <h3>Navbar Colors</h3>
+        {renderColorPicker("Background Color", "background", navbarColors, setNavbarColors)}
+        {renderColorPicker("Link Color", "links", navbarColors, setNavbarColors)}
+        {renderColorPicker("Logo Text Color", "logoText", navbarColors, setNavbarColors)}
+
+        <button onClick={handleSaveNavbarColors} disabled={loading} style={{ marginTop: "10px" }}>
+          Save Navbar Colors
+        </button>
+      </div>
     </div>
   );
 }

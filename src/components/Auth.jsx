@@ -1,124 +1,117 @@
-// src/components/Auth.jsx
-import React, { useState } from "react";
-import { auth } from "../config";
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { useState } from "react"
+import { auth } from "../config"
+import { signInWithEmailAndPassword } from "firebase/auth"
 
 function Auth() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [resetMode, setResetMode] = useState(false);
-  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setMessage("");
+    e.preventDefault()
+    setError("")
+    setLoading(true)
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      setMessage("Login successful!");
-    } catch (error) {
-      setMessage(error.message);
+      await signInWithEmailAndPassword(auth, email, password)
+    } catch (err) {
+      console.error("Login error:", err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-  };
-
-  const handlePasswordReset = async (e) => {
-    e.preventDefault();
-    setMessage("");
-
-    if (!email) {
-      setMessage("Please enter your email to reset your password.");
-      return;
-    }
-
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setMessage("Password reset email sent. Check your inbox.");
-    } catch (error) {
-      setMessage(error.message);
-    }
-  };
+  }
 
   return (
-    <div className="auth-container" style={{ maxWidth: "400px", margin: "auto", padding: "20px" }}>
-      <h2 style={{ textAlign: "center" }}>
-        {resetMode ? "Reset Password" : "Sign In"}
-      </h2>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundColor: "#f5f5f5",
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "40px",
+          borderRadius: "8px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          width: "100%",
+          maxWidth: "400px",
+        }}
+      >
+        <h2 style={{ marginBottom: "30px", textAlign: "center" }}>CMS Login</h2>
 
-      <form onSubmit={resetMode ? handlePasswordReset : handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-          value={email}
-          required
-          style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
-        />
-
-        {!resetMode && (
-          <div style={{ position: "relative" }}>
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", marginBottom: "5px" }}>Email:</label>
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-              required
-              style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               style={{
-                position: "absolute",
-                right: "10px",
-                top: "8px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+              }}
+              required
+            />
+          </div>
+
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", marginBottom: "5px" }}>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+              }}
+              required
+            />
+          </div>
+
+          {error && (
+            <div
+              style={{
+                padding: "10px",
+                backgroundColor: "#fee",
+                color: "#c33",
+                borderRadius: "4px",
+                marginBottom: "20px",
               }}
             >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          </div>
-        )}
+              {error}
+            </div>
+          )}
 
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "10px",
-            backgroundColor: "#007bff",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          {resetMode ? "Send Reset Link" : "Login"}
-        </button>
-      </form>
-
-      <div style={{ textAlign: "center", marginTop: "10px" }}>
-        <button
-          onClick={() => setResetMode(!resetMode)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "#007bff",
-            cursor: "pointer",
-            textDecoration: "underline",
-          }}
-        >
-          {resetMode ? "Back to Login" : "Forgot Password?"}
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "12px",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontSize: "16px",
+            }}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
       </div>
-
-      {message && (
-        <p style={{ marginTop: "15px", textAlign: "center", color: "#555" }}>
-          {message}
-        </p>
-      )}
     </div>
-  );
+  )
 }
 
-export default Auth;
+export default Auth
