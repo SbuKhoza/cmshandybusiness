@@ -1,10 +1,21 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
-import { db, storage } from "../config"
-import { doc, collection, query, orderBy, onSnapshot, setDoc, addDoc, deleteDoc } from "firebase/firestore"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { db, storage, auth } from "../config"
+import {
+  doc,
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  setDoc,
+  addDoc,
+  deleteDoc,
+} from "firebase/firestore"
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage"
 
 function Servicescms() {
   const { currentTenantId } = useSelector((state) => state.tenant)
@@ -19,13 +30,13 @@ function Servicescms() {
     phone: "",
     order: 0,
   })
+  const [uploadProgress, setUploadProgress] = useState({})
 
   useEffect(() => {
     if (!currentTenantId) return
 
     // Header doc
     const headerRef = doc(db, "tenants", currentTenantId, "data", "servicesHeader")
-
     const unsubHeader = onSnapshot(headerRef, async (snap) => {
       if (snap.exists()) {
         setHeader(snap.data())
@@ -74,7 +85,8 @@ function Servicescms() {
   }
 
   const handleAddService = async () => {
-    if (!currentTenantId || !newService.title) return alert("Enter a title first.")
+    if (!currentTenantId || !newService.title)
+      return alert("Enter a title first.")
     try {
       await addDoc(collection(db, "tenants", currentTenantId, "services"), newService)
       setNewService({ title: "", description: "", phone: "", order: 0 })
@@ -94,18 +106,44 @@ function Servicescms() {
     }
   }
 
+  // ✅ FIXED: matches Firebase Storage rules
   const handleImageUpload = async (e, serviceId) => {
     if (!currentTenantId) return
     const file = e.target.files[0]
     if (!file) return
 
-    try {
-      const storageRef = ref(storage, `tenants/${currentTenantId}/services/${file.name}`)
-      await uploadBytes(storageRef, file)
-      const url = await getDownloadURL(storageRef)
+    const user = auth?.currentUser
+    if (!user) {
+      alert("You must be signed in to upload images.")
+      return
+    }
 
-      const serviceRef = doc(db, "tenants", currentTenantId, "services", serviceId)
-      await setDoc(serviceRef, { image: url }, { merge: true })
+    try {
+      const fileName = `${Date.now()}_${file.name}`
+      const storageRef = ref(storage, `services/${currentTenantId}/${fileName}`)
+      const uploadTask = uploadBytesResumable(storageRef, file)
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          setUploadProgress((prev) => ({
+            ...prev,
+            [serviceId]: progress.toFixed(0),
+          }))
+        },
+        (error) => {
+          console.error("Upload error:", error)
+          alert("Image upload failed. Please check permissions.")
+        },
+        async () => {
+          const url = await getDownloadURL(uploadTask.snapshot.ref)
+          const serviceRef = doc(db, "tenants", currentTenantId, "services", serviceId)
+          await setDoc(serviceRef, { image: url }, { merge: true })
+          setUploadProgress((prev) => ({ ...prev, [serviceId]: 100 }))
+          alert("✅ Image uploaded successfully!")
+        }
+      )
     } catch (err) {
       console.error("Image upload failed:", err)
       alert("Image upload failed. Check your storage rules.")
@@ -134,7 +172,9 @@ function Servicescms() {
             <textarea
               placeholder="Short description"
               value={header.shortDescription}
-              onChange={(e) => setHeader({ ...header, shortDescription: e.target.value })}
+              onChange={(e) =>
+                setHeader({ ...header, shortDescription: e.target.value })
+              }
             />
             <button onClick={handleSaveHeader}>Save</button>
             <button onClick={() => setEditingHeader(false)}>Cancel</button>
@@ -172,14 +212,24 @@ function Servicescms() {
                 type="text"
                 value={service.title}
                 onChange={(e) =>
-                  setServices((prev) => prev.map((s) => (s.id === service.id ? { ...s, title: e.target.value } : s)))
+                  setServices((prev) =>
+                    prev.map((s) =>
+                      s.id === service.id
+                        ? { ...s, title: e.target.value }
+                        : s
+                    )
+                  )
                 }
               />
               <textarea
                 value={service.description}
                 onChange={(e) =>
                   setServices((prev) =>
-                    prev.map((s) => (s.id === service.id ? { ...s, description: e.target.value } : s)),
+                    prev.map((s) =>
+                      s.id === service.id
+                        ? { ...s, description: e.target.value }
+                        : s
+                    )
                   )
                 }
               />
@@ -188,7 +238,13 @@ function Servicescms() {
                 placeholder="Phone"
                 value={service.phone || ""}
                 onChange={(e) =>
-                  setServices((prev) => prev.map((s) => (s.id === service.id ? { ...s, phone: e.target.value } : s)))
+                  setServices((prev) =>
+                    prev.map((s) =>
+                      s.id === service.id
+                        ? { ...s, phone: e.target.value }
+                        : s
+                    )
+                  )
                 }
               />
               <input
@@ -197,12 +253,24 @@ function Servicescms() {
                 value={service.order || 0}
                 onChange={(e) =>
                   setServices((prev) =>
-                    prev.map((s) => (s.id === service.id ? { ...s, order: Number.parseInt(e.target.value) } : s)),
+                    prev.map((s) =>
+                      s.id === service.id
+                        ? { ...s, order: Number.parseInt(e.target.value) }
+                        : s
+                    )
                   )
                 }
               />
-              <input type="file" onChange={(e) => handleImageUpload(e, service.id)} />
-              <button onClick={() => handleSaveService(service.id, service)}>Save</button>
+              <input
+                type="file"
+                onChange={(e) => handleImageUpload(e, service.id)}
+              />
+              {uploadProgress[service.id] && (
+                <p>Uploading: {uploadProgress[service.id]}%</p>
+              )}
+              <button onClick={() => handleSaveService(service.id, service)}>
+                Save
+              </button>
               <button onClick={() => setEditServiceId(null)}>Cancel</button>
             </div>
           ) : (
@@ -241,18 +309,24 @@ function Servicescms() {
         type="text"
         placeholder="Service title"
         value={newService.title}
-        onChange={(e) => setNewService({ ...newService, title: e.target.value })}
+        onChange={(e) =>
+          setNewService({ ...newService, title: e.target.value })
+        }
       />
       <textarea
         placeholder="Service description"
         value={newService.description}
-        onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+        onChange={(e) =>
+          setNewService({ ...newService, description: e.target.value })
+        }
       />
       <input
         type="text"
         placeholder="Phone number"
         value={newService.phone}
-        onChange={(e) => setNewService({ ...newService, phone: e.target.value })}
+        onChange={(e) =>
+          setNewService({ ...newService, phone: e.target.value })
+        }
       />
       <input
         type="number"
