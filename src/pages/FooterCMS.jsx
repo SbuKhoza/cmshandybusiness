@@ -12,38 +12,30 @@ function FooterCMS() {
     // Company Section
     companyName: "Your Company",
     companyDescription: "Your business description goes here.",
-    
+
     // Quick Links
     quickLinks: [
       { text: "Home", url: "/" },
-      { text: "Services", url: "/services" },
       { text: "About", url: "/about" },
       { text: "Contact", url: "/contact" },
     ],
-    
-    // Services
-    services: [
-      { text: "Service 1", url: "/services" },
-      { text: "Service 2", url: "/services" },
-      { text: "Service 3", url: "/services" },
-    ],
-    
+
     // Contact Info
     address: "Your Address Here",
     email: "info@yourcompany.com",
     phone: "+27 00 000 0000",
-    
+
     // Social Media
     facebook: "",
     twitter: "",
     linkedin: "",
     instagram: "",
-    
+
     // Bottom Section
     copyrightText: "© 2025 Your Company. All rights reserved.",
     privacyPolicyUrl: "/privacy",
     termsOfServiceUrl: "/terms",
-    
+
     // Colors
     backgroundColor: "#2b2d42",
     textColor: "#e0e0e0",
@@ -53,9 +45,6 @@ function FooterCMS() {
     accentColor: "#4361ee",
     bottomBarBgColor: "#1a1b2e",
   });
-
-  const [editingLink, setEditingLink] = useState(null);
-  const [editingService, setEditingService] = useState(null);
 
   // Preset colors
   const presetColors = [
@@ -76,7 +65,7 @@ function FooterCMS() {
       try {
         const footerRef = doc(db, "tenants", currentTenantId, "data", "footer");
         const footerSnap = await getDoc(footerRef);
-        
+
         if (footerSnap.exists()) {
           setFooterData({ ...footerData, ...footerSnap.data() });
         }
@@ -86,12 +75,13 @@ function FooterCMS() {
     };
 
     loadFooterData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTenantId]);
 
   const handleSaveFooter = async () => {
     if (!currentTenantId) return alert("No tenant selected.");
     setLoading(true);
-    
+
     try {
       const footerRef = doc(db, "tenants", currentTenantId, "data", "footer");
       await setDoc(footerRef, footerData, { merge: true });
@@ -104,10 +94,11 @@ function FooterCMS() {
     }
   };
 
+  // Quick Links handlers
   const handleAddQuickLink = () => {
     setFooterData({
       ...footerData,
-      quickLinks: [...footerData.quickLinks, { text: "New Link", url: "/" }]
+      quickLinks: [...footerData.quickLinks, { text: "New Link", url: "/" }],
     });
   };
 
@@ -122,24 +113,6 @@ function FooterCMS() {
     setFooterData({ ...footerData, quickLinks: updated });
   };
 
-  const handleAddService = () => {
-    setFooterData({
-      ...footerData,
-      services: [...footerData.services, { text: "New Service", url: "/services" }]
-    });
-  };
-
-  const handleRemoveService = (index) => {
-    const updated = footerData.services.filter((_, i) => i !== index);
-    setFooterData({ ...footerData, services: updated });
-  };
-
-  const handleUpdateService = (index, field, value) => {
-    const updated = [...footerData.services];
-    updated[index][field] = value;
-    setFooterData({ ...footerData, services: updated });
-  };
-
   const renderColorPicker = (label, field) => {
     return (
       <div className="footer-color-picker">
@@ -148,13 +121,17 @@ function FooterCMS() {
           <input
             type="color"
             value={footerData[field]}
-            onChange={(e) => setFooterData({ ...footerData, [field]: e.target.value })}
+            onChange={(e) =>
+              setFooterData({ ...footerData, [field]: e.target.value })
+            }
             className="color-input-small"
           />
           <input
             type="text"
             value={footerData[field]}
-            onChange={(e) => setFooterData({ ...footerData, [field]: e.target.value })}
+            onChange={(e) =>
+              setFooterData({ ...footerData, [field]: e.target.value })
+            }
             className="color-text-input-small"
           />
         </div>
@@ -162,7 +139,9 @@ function FooterCMS() {
           {presetColors.map(({ color, name }) => (
             <div
               key={color}
-              onClick={() => setFooterData({ ...footerData, [field]: color })}
+              onClick={() =>
+                setFooterData({ ...footerData, [field]: color })
+              }
               className="preset-color-small"
               title={name}
               style={{ backgroundColor: color }}
@@ -184,19 +163,26 @@ function FooterCMS() {
       {/* Company Section */}
       <div className="cms-section">
         <h3>Company Information</h3>
-        
+
         <label className="footer-label">Company Name</label>
         <input
           type="text"
           value={footerData.companyName}
-          onChange={(e) => setFooterData({ ...footerData, companyName: e.target.value })}
+          onChange={(e) =>
+            setFooterData({ ...footerData, companyName: e.target.value })
+          }
           className="footer-input"
         />
 
         <label className="footer-label">Company Description</label>
         <textarea
           value={footerData.companyDescription}
-          onChange={(e) => setFooterData({ ...footerData, companyDescription: e.target.value })}
+          onChange={(e) =>
+            setFooterData({
+              ...footerData,
+              companyDescription: e.target.value,
+            })
+          }
           className="footer-textarea"
           rows="3"
         />
@@ -211,18 +197,22 @@ function FooterCMS() {
               type="text"
               placeholder="Link Text"
               value={link.text}
-              onChange={(e) => handleUpdateQuickLink(index, "text", e.target.value)}
+              onChange={(e) =>
+                handleUpdateQuickLink(index, "text", e.target.value)
+              }
               className="footer-input-inline"
             />
             <input
               type="text"
               placeholder="URL"
               value={link.url}
-              onChange={(e) => handleUpdateQuickLink(index, "url", e.target.value)}
+              onChange={(e) =>
+                handleUpdateQuickLink(index, "url", e.target.value)
+              }
               className="footer-input-inline"
             />
-            <button 
-              className="btn-danger-small" 
+            <button
+              className="btn-danger-small"
               onClick={() => handleRemoveQuickLink(index)}
             >
               Remove
@@ -234,47 +224,17 @@ function FooterCMS() {
         </button>
       </div>
 
-      {/* Services */}
-      <div className="cms-section">
-        <h3>Services</h3>
-        {footerData.services.map((service, index) => (
-          <div key={index} className="link-item">
-            <input
-              type="text"
-              placeholder="Service Name"
-              value={service.text}
-              onChange={(e) => handleUpdateService(index, "text", e.target.value)}
-              className="footer-input-inline"
-            />
-            <input
-              type="text"
-              placeholder="URL"
-              value={service.url}
-              onChange={(e) => handleUpdateService(index, "url", e.target.value)}
-              className="footer-input-inline"
-            />
-            <button 
-              className="btn-danger-small" 
-              onClick={() => handleRemoveService(index)}
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-        <button className="btn-secondary" onClick={handleAddService}>
-          + Add Service
-        </button>
-      </div>
-
       {/* Contact Information */}
       <div className="cms-section">
         <h3>Contact Information</h3>
-        
+
         <label className="footer-label">Address</label>
         <input
           type="text"
           value={footerData.address}
-          onChange={(e) => setFooterData({ ...footerData, address: e.target.value })}
+          onChange={(e) =>
+            setFooterData({ ...footerData, address: e.target.value })
+          }
           className="footer-input"
         />
 
@@ -282,7 +242,9 @@ function FooterCMS() {
         <input
           type="email"
           value={footerData.email}
-          onChange={(e) => setFooterData({ ...footerData, email: e.target.value })}
+          onChange={(e) =>
+            setFooterData({ ...footerData, email: e.target.value })
+          }
           className="footer-input"
         />
 
@@ -290,7 +252,9 @@ function FooterCMS() {
         <input
           type="text"
           value={footerData.phone}
-          onChange={(e) => setFooterData({ ...footerData, phone: e.target.value })}
+          onChange={(e) =>
+            setFooterData({ ...footerData, phone: e.target.value })
+          }
           className="footer-input"
         />
       </div>
@@ -298,12 +262,14 @@ function FooterCMS() {
       {/* Social Media */}
       <div className="cms-section">
         <h3>Social Media Links</h3>
-        
+
         <label className="footer-label">Facebook URL</label>
         <input
           type="url"
           value={footerData.facebook}
-          onChange={(e) => setFooterData({ ...footerData, facebook: e.target.value })}
+          onChange={(e) =>
+            setFooterData({ ...footerData, facebook: e.target.value })
+          }
           className="footer-input"
           placeholder="https://facebook.com/yourpage"
         />
@@ -312,7 +278,9 @@ function FooterCMS() {
         <input
           type="url"
           value={footerData.twitter}
-          onChange={(e) => setFooterData({ ...footerData, twitter: e.target.value })}
+          onChange={(e) =>
+            setFooterData({ ...footerData, twitter: e.target.value })
+          }
           className="footer-input"
           placeholder="https://twitter.com/yourhandle"
         />
@@ -321,7 +289,9 @@ function FooterCMS() {
         <input
           type="url"
           value={footerData.linkedin}
-          onChange={(e) => setFooterData({ ...footerData, linkedin: e.target.value })}
+          onChange={(e) =>
+            setFooterData({ ...footerData, linkedin: e.target.value })
+          }
           className="footer-input"
           placeholder="https://linkedin.com/company/yourcompany"
         />
@@ -330,7 +300,9 @@ function FooterCMS() {
         <input
           type="url"
           value={footerData.instagram}
-          onChange={(e) => setFooterData({ ...footerData, instagram: e.target.value })}
+          onChange={(e) =>
+            setFooterData({ ...footerData, instagram: e.target.value })
+          }
           className="footer-input"
           placeholder="https://instagram.com/yourhandle"
         />
@@ -339,12 +311,14 @@ function FooterCMS() {
       {/* Bottom Section */}
       <div className="cms-section">
         <h3>Bottom Section</h3>
-        
+
         <label className="footer-label">Copyright Text</label>
         <input
           type="text"
           value={footerData.copyrightText}
-          onChange={(e) => setFooterData({ ...footerData, copyrightText: e.target.value })}
+          onChange={(e) =>
+            setFooterData({ ...footerData, copyrightText: e.target.value })
+          }
           className="footer-input"
         />
 
@@ -352,7 +326,12 @@ function FooterCMS() {
         <input
           type="text"
           value={footerData.privacyPolicyUrl}
-          onChange={(e) => setFooterData({ ...footerData, privacyPolicyUrl: e.target.value })}
+          onChange={(e) =>
+            setFooterData({
+              ...footerData,
+              privacyPolicyUrl: e.target.value,
+            })
+          }
           className="footer-input"
         />
 
@@ -360,7 +339,12 @@ function FooterCMS() {
         <input
           type="text"
           value={footerData.termsOfServiceUrl}
-          onChange={(e) => setFooterData({ ...footerData, termsOfServiceUrl: e.target.value })}
+          onChange={(e) =>
+            setFooterData({
+              ...footerData,
+              termsOfServiceUrl: e.target.value,
+            })
+          }
           className="footer-input"
         />
       </div>
@@ -382,7 +366,7 @@ function FooterCMS() {
       {/* Footer Preview */}
       <div className="cms-section">
         <h3>Footer Preview</h3>
-        <div 
+        <div
           className="footer-preview"
           style={{
             backgroundColor: footerData.backgroundColor,
@@ -391,23 +375,21 @@ function FooterCMS() {
         >
           <div className="preview-content">
             <div className="preview-column">
-              <h4 style={{ color: footerData.headingColor }}>{footerData.companyName}</h4>
+              <h4 style={{ color: footerData.headingColor }}>
+                {footerData.companyName}
+              </h4>
               <p>{footerData.companyDescription}</p>
             </div>
             <div className="preview-column">
               <h4 style={{ color: footerData.headingColor }}>Quick Links</h4>
               {footerData.quickLinks.slice(0, 3).map((link, i) => (
-                <p key={i} style={{ color: footerData.linkColor }}>{link.text}</p>
-              ))}
-            </div>
-            <div className="preview-column">
-              <h4 style={{ color: footerData.headingColor }}>Services</h4>
-              {footerData.services.slice(0, 3).map((service, i) => (
-                <p key={i} style={{ color: footerData.linkColor }}>{service.text}</p>
+                <p key={i} style={{ color: footerData.linkColor }}>
+                  {link.text}
+                </p>
               ))}
             </div>
           </div>
-          <div 
+          <div
             className="preview-bottom"
             style={{ backgroundColor: footerData.bottomBarBgColor }}
           >
@@ -416,9 +398,9 @@ function FooterCMS() {
         </div>
       </div>
 
-      <button 
-        className="btn-primary1" 
-        onClick={handleSaveFooter} 
+      <button
+        className="btn-primary1"
+        onClick={handleSaveFooter}
         disabled={loading}
       >
         {loading ? "Saving..." : "Save Footer Settings"}
