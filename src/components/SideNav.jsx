@@ -79,13 +79,11 @@ function SideNav() {
                 </Link>
               </li>
               <li style={{ marginBottom: "15px" }}>
-                <Link to="/navbarcms" style={{ color: "white", textDecoration: "none", display: "block" }}>
-                  Navbar CMS
-                </Link>
+              
               </li>
               <li style={{ marginBottom: "15px" }}>
                 <Link to="/projects" style={{ color: "white", textDecoration: "none", display: "block" }}>
-                  Projects
+                  Projects/Gallery
                 </Link>
               </li>
             </>

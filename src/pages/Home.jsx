@@ -4,7 +4,8 @@ import { db, storage } from "../config";
 import {
   ref,
   uploadBytes,
-  getDownloadURL
+  getDownloadURL,
+  deleteObject
 } from "firebase/storage";
 import {
   doc,
@@ -19,13 +20,12 @@ import {
   getDocs,
   deleteDoc
 } from "firebase/firestore";
+import "./Home.css";
 
 function Home() {
   const { currentTenantId } = useSelector((state) => state.tenant);
 
-  // ==========================
   // Logo Management
-  // ==========================
   const [useImage, setUseImage] = useState(false);
   const [logoText, setLogoText] = useState("");
   const [logoFile, setLogoFile] = useState(null);
@@ -42,6 +42,14 @@ function Home() {
     taglineColor: "#222222",
     sloganColor: "#222222",
     shortDescriptionColor: "#444444",
+    // Button settings
+    primaryButtonText: "Book for a service",
+    primaryButtonBgColor: "#f4b400",
+    primaryButtonTextColor: "#000000",
+    secondaryButtonText: "Call: 0123456789",
+    secondaryButtonBgColor: "transparent",
+    secondaryButtonTextColor: "#ffffff",
+    secondaryButtonBorderColor: "#ffffff",
   });
   const [bannerFiles, setBannerFiles] = useState([]);
   const [rightFile, setRightFile] = useState(null);
@@ -51,6 +59,12 @@ function Home() {
     background: "transparent",
     links: "#ffffff",
     logoText: "#ffffff",
+    scrolledBackground: "rgb(5, 4, 4)",
+    scrolledLinks: "#ffffff",
+    scrolledLogoText: "#ffffff",
+    otherPagesBackground: "#ffffff",
+    otherPagesLinks: "#000000",
+    otherPagesLogoText: "#000000",
   });
 
   // Loading state
@@ -73,9 +87,7 @@ function Home() {
     { color: "#FFD700", name: "Gold" },
   ];
 
-  // ==========================
   // Allowed Reviewers
-  // ==========================
   const [reviewerEmail, setReviewerEmail] = useState("");
   const [allowedUsers, setAllowedUsers] = useState([]);
 
@@ -117,9 +129,7 @@ function Home() {
     }
   };
 
-  // ==========================
   // Load Tenant Data
-  // ==========================
   useEffect(() => {
     if (!currentTenantId) return;
 
@@ -157,13 +167,32 @@ function Home() {
             taglineColor: data.taglineColor || "#222222",
             sloganColor: data.sloganColor || "#222222",
             shortDescriptionColor: data.shortDescriptionColor || "#444444",
+            primaryButtonText: data.primaryButtonText || "Book for a service",
+            primaryButtonBgColor: data.primaryButtonBgColor || "#f4b400",
+            primaryButtonTextColor: data.primaryButtonTextColor || "#000000",
+            secondaryButtonText: data.secondaryButtonText || "Call: 0123456789",
+            secondaryButtonBgColor: data.secondaryButtonBgColor || "transparent",
+            secondaryButtonTextColor: data.secondaryButtonTextColor || "#ffffff",
+            secondaryButtonBorderColor: data.secondaryButtonBorderColor || "#ffffff",
           });
         }
 
         // Navbar colors
         const navbarRef = doc(db, "tenants", currentTenantId, "data", "navbarColors");
         const navbarSnap = await getDoc(navbarRef);
-        if (navbarSnap.exists()) setNavbarColors(navbarSnap.data());
+        if (navbarSnap.exists()) {
+          setNavbarColors({
+            background: navbarSnap.data().background || "transparent",
+            links: navbarSnap.data().links || "#ffffff",
+            logoText: navbarSnap.data().logoText || "#ffffff",
+            scrolledBackground: navbarSnap.data().scrolledBackground || "rgb(5, 4, 4)",
+            scrolledLinks: navbarSnap.data().scrolledLinks || "#ffffff",
+            scrolledLogoText: navbarSnap.data().scrolledLogoText || "#ffffff",
+            otherPagesBackground: navbarSnap.data().otherPagesBackground || "#ffffff",
+            otherPagesLinks: navbarSnap.data().otherPagesLinks || "#000000",
+            otherPagesLogoText: navbarSnap.data().otherPagesLogoText || "#000000",
+          });
+        }
       } catch (err) {
         console.error(err);
       }
@@ -172,9 +201,7 @@ function Home() {
     loadData();
   }, [currentTenantId]);
 
-  // ==========================
   // Helpers for Colors
-  // ==========================
   const hexToRgba = (hex, alpha = 1) => {
     if (hex === "transparent") return "transparent";
     const r = parseInt(hex.slice(1, 3), 16);
@@ -202,9 +229,7 @@ function Home() {
     return "#000000";
   };
 
-  // ==========================
-  // Save Handlers
-  // ==========================
+  // Logo handlers
   const handleSaveLogo = async () => {
     if (!currentTenantId) return alert("No tenant selected.");
     setLoading(true);
@@ -234,6 +259,38 @@ function Home() {
     }
   };
 
+  const handleDeleteLogo = async () => {
+    if (!window.confirm("Delete the current logo?")) return;
+    setLoading(true);
+    try {
+      if (savedLogo?.type === "image" && savedLogo?.url) {
+        const logoRef = ref(storage, savedLogo.url);
+        await deleteObject(logoRef).catch(() => {});
+      }
+      const logoDocRef = doc(db, "tenants", currentTenantId, "data", "logo");
+      await deleteDoc(logoDocRef);
+      setSavedLogo(null);
+      setLogoText("");
+      setLogoFile(null);
+      alert("Logo deleted!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete logo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditLogo = () => {
+    if (savedLogo?.type === "text") {
+      setLogoText(savedLogo.text);
+      setUseImage(false);
+    } else {
+      setUseImage(true);
+    }
+  };
+
+  // Homepage handlers
   const handleSaveHome = async () => {
     if (!currentTenantId) return alert("No tenant selected.");
     setLoading(true);
@@ -277,6 +334,110 @@ function Home() {
     }
   };
 
+  const handleRemoveBannerImage = async (index) => {
+    if (!window.confirm("Delete this banner image?")) return;
+    try {
+      const imageUrl = homeData.bannerImages[index];
+      const imageRef = ref(storage, imageUrl);
+      await deleteObject(imageRef).catch(() => {});
+      
+      const updatedBanners = homeData.bannerImages.filter((_, i) => i !== index);
+      setHomeData({ ...homeData, bannerImages: updatedBanners });
+      
+      const homepageRef = doc(db, "tenants", currentTenantId, "data", "homepage");
+      await setDoc(homepageRef, { bannerImages: updatedBanners }, { merge: true });
+      alert("Banner image deleted!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete banner image.");
+    }
+  };
+
+  const handleEditBannerImage = (index) => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        setLoading(true);
+        const bannerRef = ref(storage, `homepage/${currentTenantId}/banner_${Date.now()}.jpg`);
+        await uploadBytes(bannerRef, file);
+        const url = await getDownloadURL(bannerRef);
+        
+        // Delete old image
+        const oldImageUrl = homeData.bannerImages[index];
+        const oldImageRef = ref(storage, oldImageUrl);
+        await deleteObject(oldImageRef).catch(() => {});
+        
+        const updatedBanners = [...homeData.bannerImages];
+        updatedBanners[index] = url;
+        setHomeData({ ...homeData, bannerImages: updatedBanners });
+        
+        const homepageRef = doc(db, "tenants", currentTenantId, "data", "homepage");
+        await setDoc(homepageRef, { bannerImages: updatedBanners }, { merge: true });
+        alert("Banner image updated!");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update banner image.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fileInput.click();
+  };
+
+  const handleDeleteRightImage = async () => {
+    if (!window.confirm("Delete the right image?")) return;
+    try {
+      setLoading(true);
+      if (homeData.rightImage) {
+        const imageRef = ref(storage, homeData.rightImage);
+        await deleteObject(imageRef).catch(() => {});
+      }
+      
+      setHomeData({ ...homeData, rightImage: "" });
+      const homepageRef = doc(db, "tenants", currentTenantId, "data", "homepage");
+      await setDoc(homepageRef, { rightImage: "" }, { merge: true });
+      alert("Right image deleted!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete right image.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditRightImage = () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        setLoading(true);
+        const rightRef = ref(storage, `homepage/${currentTenantId}/right.jpg`);
+        await uploadBytes(rightRef, file);
+        const url = await getDownloadURL(rightRef);
+        
+        setHomeData({ ...homeData, rightImage: url });
+        const homepageRef = doc(db, "tenants", currentTenantId, "data", "homepage");
+        await setDoc(homepageRef, { rightImage: url }, { merge: true });
+        alert("Right image updated!");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update right image.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fileInput.click();
+  };
+
   const handleSaveNavbarColors = async () => {
     if (!currentTenantId) return alert("No tenant selected.");
     try {
@@ -289,13 +450,6 @@ function Home() {
     }
   };
 
-  const handleRemoveBannerImage = (index) => {
-    setHomeData({
-      ...homeData,
-      bannerImages: homeData.bannerImages.filter((_, i) => i !== index),
-    });
-  };
-
   const renderColorPicker = (label, field, state, setState) => {
     const currentColor = state[field] || "#000000";
     const hexColor = getHexFromColor(currentColor);
@@ -306,25 +460,53 @@ function Home() {
     };
 
     return (
-      <div style={{ marginTop: "15px" }}>
-        <label>{label}:</label>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center", marginTop: "8px", marginBottom: "8px" }}>
-          <input type="color" value={hexColor} onChange={(e) => updateColor(e.target.value, alphaValue)} style={{ width: "50px", height: "35px", cursor: "pointer" }} />
-          <input type="text" placeholder="#000000" value={currentColor} onChange={(e) => {
-            const val = e.target.value;
-            if (val.startsWith("#") || val.startsWith("rgb") || val === "transparent") setState({ ...state, [field]: val });
-          }} style={{ padding: "6px 10px", width: "150px", border: "1px solid #ccc", borderRadius: "4px" }} />
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            <label style={{ fontSize: "11px", margin: 0 }}>Opacity: {Math.round(alphaValue * 100)}%</label>
-            <input type="range" min="0" max="100" value={Math.round(alphaValue * 100)} onChange={(e) => updateColor(hexColor, parseInt(e.target.value) / 100)} style={{ width: "120px", cursor: "pointer" }} />
+      <div className="color-picker-section">
+        <label className="input-label">{label}:</label>
+        <div className="color-picker-controls">
+          <input
+            type="color"
+            value={hexColor}
+            onChange={(e) => updateColor(e.target.value, alphaValue)}
+            className="color-input"
+          />
+          <input
+            type="text"
+            placeholder="#000000"
+            value={currentColor}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val.startsWith("#") || val.startsWith("rgb") || val === "transparent")
+                setState({ ...state, [field]: val });
+            }}
+            className="color-text-input"
+          />
+          <div className="opacity-control">
+            <label className="opacity-label">
+              Opacity: {Math.round(alphaValue * 100)}%
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={Math.round(alphaValue * 100)}
+              onChange={(e) => updateColor(hexColor, parseInt(e.target.value) / 100)}
+              className="opacity-slider"
+            />
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+        <div className="preset-colors">
           {presetColors.map(({ color, name }) => (
-            <div key={color} onClick={() => setState({ ...state, [field]: color })} style={{ display: "flex", alignItems: "center", cursor: "pointer", gap: "4px" }}>
-              <div style={{ width: "22px", height: "22px", backgroundColor: color, border: "1px solid #ccc", borderRadius: "50%" }} />
-              <span style={{ fontSize: "12px" }}>{name}</span>
+            <div
+              key={color}
+              onClick={() => setState({ ...state, [field]: color })}
+              className="preset-color-item"
+            >
+              <div
+                className="preset-color-swatch"
+                style={{ backgroundColor: color }}
+              />
+              <span className="preset-color-name">{name}</span>
             </div>
           ))}
         </div>
@@ -332,57 +514,123 @@ function Home() {
     );
   };
 
-  if (!currentTenantId) return <div>Please select a tenant first.</div>;
+  if (!currentTenantId) return <div className="no-tenant-message">Please select a tenant first.</div>;
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="home-container">
       <h2>CMS Dashboard</h2>
 
       {/* Logo Section */}
-      <div style={{ marginBottom: "40px" }}>
+      <div className="cms-section">
         <h3>Logo Management</h3>
-        <button onClick={() => setUseImage(!useImage)}>{useImage ? "Use Text Logo" : "Use Image Logo"}</button>
+        <div className="logo-toggle">
+          <button className="btn-secondary" onClick={() => setUseImage(!useImage)}>
+            {useImage ? "Use Text Logo" : "Use Image Logo"}
+          </button>
+        </div>
         {useImage ? (
-          <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files[0])} style={{ marginTop: "10px" }} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setLogoFile(e.target.files[0])}
+            className="file-input"
+          />
         ) : (
-          <input type="text" placeholder="Enter Logo Text" value={logoText} onChange={(e) => setLogoText(e.target.value)} style={{ marginTop: "10px" }} />
+          <input
+            type="text"
+            placeholder="Enter Logo Text"
+            value={logoText}
+            onChange={(e) => setLogoText(e.target.value)}
+            className="input-field"
+          />
         )}
-        <button onClick={handleSaveLogo} disabled={loading} style={{ marginTop: "10px" }}>{loading ? "Saving..." : "Save Logo"}</button>
+        <button className="btn-primary" onClick={handleSaveLogo} disabled={loading}>
+          {loading ? <><span className="loading-spinner"></span>Saving...</> : "Save Logo"}
+        </button>
 
         {savedLogo && (
-          <div style={{ marginTop: "20px" }}>
+          <div className="logo-preview">
             <h4>Saved Logo Preview:</h4>
-            {savedLogo.type === "text" ? <h2>{savedLogo.text}</h2> : <img src={savedLogo.url || "/placeholder.svg"} alt="Logo" style={{ width: "120px", borderRadius: "8px", border: "1px solid #ccc" }} />}
+            {savedLogo.type === "text" ? (
+              <h2>{savedLogo.text}</h2>
+            ) : (
+              <div className="image-card">
+                <img src={savedLogo.url} alt="Logo" />
+                <div className="image-actions">
+                  <button className="image-action-btn edit" onClick={handleEditLogo} title="Edit">
+                    ✎
+                  </button>
+                  <button className="image-action-btn delete" onClick={handleDeleteLogo} title="Delete">
+                    ×
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* Homepage Section */}
-      <div style={{ marginBottom: "40px" }}>
+      <div className="cms-section">
         <h3>Homepage Management</h3>
 
-        <label>Tagline</label>
-        <input type="text" value={homeData.tagline} onChange={(e) => setHomeData({ ...homeData, tagline: e.target.value })} />
+        <label className="input-label">Tagline</label>
+        <input
+          type="text"
+          value={homeData.tagline}
+          onChange={(e) => setHomeData({ ...homeData, tagline: e.target.value })}
+          className="input-field"
+        />
         {renderColorPicker("Tagline Color", "taglineColor", homeData, setHomeData)}
 
-        <label style={{ marginTop: "10px" }}>Slogan</label>
-        <input type="text" value={homeData.slogan} onChange={(e) => setHomeData({ ...homeData, slogan: e.target.value })} />
+        <label className="input-label">Slogan</label>
+        <input
+          type="text"
+          value={homeData.slogan}
+          onChange={(e) => setHomeData({ ...homeData, slogan: e.target.value })}
+          className="input-field"
+        />
         {renderColorPicker("Slogan Color", "sloganColor", homeData, setHomeData)}
 
-        <label style={{ marginTop: "10px" }}>Short Description</label>
-        <textarea value={homeData.shortDescription} onChange={(e) => setHomeData({ ...homeData, shortDescription: e.target.value })} />
+        <label className="input-label">Short Description</label>
+        <textarea
+          value={homeData.shortDescription}
+          onChange={(e) => setHomeData({ ...homeData, shortDescription: e.target.value })}
+          className="textarea-field"
+        />
         {renderColorPicker("Short Description Color", "shortDescriptionColor", homeData, setHomeData)}
 
         {/* Banner Images */}
-        <div style={{ marginTop: "20px" }}>
-          <label>Banner Images:</label>
-          <input type="file" multiple accept="image/*" onChange={(e) => setBannerFiles(Array.from(e.target.files))} />
+        <div>
+          <label className="input-label">Banner Images:</label>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => setBannerFiles(Array.from(e.target.files))}
+            className="file-input"
+          />
           {homeData.bannerImages.length > 0 && (
-            <div style={{ marginTop: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div className="image-grid">
               {homeData.bannerImages.map((img, index) => (
-                <div key={index} style={{ position: "relative" }}>
-                  <img src={img} alt={`Banner ${index}`} style={{ width: "150px", height: "100px", objectFit: "cover", borderRadius: "8px", border: "1px solid #ccc" }} />
-                  <button onClick={() => handleRemoveBannerImage(index)} style={{ position: "absolute", top: "5px", right: "5px", backgroundColor: "red", color: "white", border: "none", borderRadius: "50%", width: "25px", height: "25px", cursor: "pointer" }}>X</button>
+                <div key={index} className="image-card">
+                  <img src={img} alt={`Banner ${index}`} />
+                  <div className="image-actions">
+                    <button
+                      className="image-action-btn edit"
+                      onClick={() => handleEditBannerImage(index)}
+                      title="Edit"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      className="image-action-btn delete"
+                      onClick={() => handleRemoveBannerImage(index)}
+                      title="Delete"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -390,13 +638,47 @@ function Home() {
         </div>
 
         {/* Right Image */}
-        <div style={{ marginTop: "20px" }}>
-          <label>Right Image:</label>
-          <input type="file" accept="image/*" onChange={(e) => setRightFile(e.target.files[0])} />
-          {homeData.rightImage && <img src={homeData.rightImage} alt="Right" style={{ width: "200px", marginTop: "10px", borderRadius: "8px", border: "1px solid #ccc", objectFit: homeData.rightImageFit || "cover" }} />}
-          <div style={{ marginTop: "10px" }}>
-            <label>Right Image Fit:</label>
-            <select value={homeData.rightImageFit || "cover"} onChange={(e) => setHomeData({ ...homeData, rightImageFit: e.target.value })}>
+        <div>
+          <label className="input-label">Right Image:</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setRightFile(e.target.files[0])}
+            className="file-input"
+          />
+          {homeData.rightImage && (
+            <div className="right-image-container">
+              <img
+                src={homeData.rightImage}
+                alt="Right"
+                className="right-image-preview"
+                style={{ objectFit: homeData.rightImageFit || "cover" }}
+              />
+              <div className="right-image-actions">
+                <button
+                  className="image-action-btn edit"
+                  onClick={handleEditRightImage}
+                  title="Edit"
+                >
+                  ✎
+                </button>
+                <button
+                  className="image-action-btn delete"
+                  onClick={handleDeleteRightImage}
+                  title="Delete"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+          <div>
+            <label className="input-label">Right Image Fit:</label>
+            <select
+              value={homeData.rightImageFit || "cover"}
+              onChange={(e) => setHomeData({ ...homeData, rightImageFit: e.target.value })}
+              className="select-field"
+            >
               <option value="cover">Cover</option>
               <option value="contain">Contain</option>
               <option value="fill">Fill</option>
@@ -406,30 +688,126 @@ function Home() {
           </div>
         </div>
 
-        <button onClick={handleSaveHome} disabled={loading} style={{ marginTop: "20px" }}>{loading ? "Saving..." : "Save Homepage"}</button>
+        {/* Button Management */}
+        <div style={{ marginTop: '2rem', padding: '1.5rem', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+          <h4 style={{ marginBottom: '1rem', color: '#333' }}>Call-to-Action Buttons</h4>
+          
+          {/* Primary Button */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h5 style={{ color: '#555', marginBottom: '0.5rem' }}>Primary Button</h5>
+            <label className="input-label">Button Text</label>
+            <input
+              type="text"
+              value={homeData.primaryButtonText}
+              onChange={(e) => setHomeData({ ...homeData, primaryButtonText: e.target.value })}
+              className="input-field"
+              placeholder="Book for a service"
+            />
+            {renderColorPicker("Background Color", "primaryButtonBgColor", homeData, setHomeData)}
+            {renderColorPicker("Text Color", "primaryButtonTextColor", homeData, setHomeData)}
+          </div>
+
+          {/* Secondary Button */}
+          <div>
+            <h5 style={{ color: '#555', marginBottom: '0.5rem' }}>Secondary Button</h5>
+            <label className="input-label">Button Text</label>
+            <input
+              type="text"
+              value={homeData.secondaryButtonText}
+              onChange={(e) => setHomeData({ ...homeData, secondaryButtonText: e.target.value })}
+              className="input-field"
+              placeholder="Call: 0123456789"
+            />
+            {renderColorPicker("Background Color", "secondaryButtonBgColor", homeData, setHomeData)}
+            {renderColorPicker("Text Color", "secondaryButtonTextColor", homeData, setHomeData)}
+            {renderColorPicker("Border Color", "secondaryButtonBorderColor", homeData, setHomeData)}
+          </div>
+
+          {/* Button Preview */}
+          <div style={{ marginTop: '1.5rem' }}>
+            <h5 style={{ color: '#555', marginBottom: '0.5rem' }}>Button Preview:</h5>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <button
+                style={{
+                  backgroundColor: homeData.primaryButtonBgColor,
+                  color: homeData.primaryButtonTextColor,
+                  padding: '0.75rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '5px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+              >
+                {homeData.primaryButtonText}
+              </button>
+              <button
+                style={{
+                  backgroundColor: homeData.secondaryButtonBgColor,
+                  color: homeData.secondaryButtonTextColor,
+                  border: `2px solid ${homeData.secondaryButtonBorderColor}`,
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '5px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+              >
+                {homeData.secondaryButtonText}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button className="btn-primary" onClick={handleSaveHome} disabled={loading}>
+          {loading ? <><span className="loading-spinner"></span>Saving...</> : "Save Homepage"}
+        </button>
       </div>
 
       {/* Navbar Colors */}
-      <div style={{ marginBottom: "40px" }}>
+      <div className="cms-section">
         <h3>Navbar Colors</h3>
+        
+        <h4 style={{ marginTop: '1.5rem', marginBottom: '1rem', color: '#333' }}>Homepage Navbar (Initial)</h4>
         {renderColorPicker("Background Color", "background", navbarColors, setNavbarColors)}
         {renderColorPicker("Link Color", "links", navbarColors, setNavbarColors)}
         {renderColorPicker("Logo Text Color", "logoText", navbarColors, setNavbarColors)}
-        <button onClick={handleSaveNavbarColors} disabled={loading} style={{ marginTop: "10px" }}>Save Navbar Colors</button>
+        
+        <h4 style={{ marginTop: '2rem', marginBottom: '1rem', color: '#333' }}>Homepage Navbar (Scrolled)</h4>
+        {renderColorPicker("Scrolled Background Color", "scrolledBackground", navbarColors, setNavbarColors)}
+        {renderColorPicker("Scrolled Link Color", "scrolledLinks", navbarColors, setNavbarColors)}
+        {renderColorPicker("Scrolled Logo Text Color", "scrolledLogoText", navbarColors, setNavbarColors)}
+        
+        <h4 style={{ marginTop: '2rem', marginBottom: '1rem', color: '#333' }}>Other Pages Navbar</h4>
+        {renderColorPicker("Other Pages Background Color", "otherPagesBackground", navbarColors, setNavbarColors)}
+        {renderColorPicker("Other Pages Link Color", "otherPagesLinks", navbarColors, setNavbarColors)}
+        {renderColorPicker("Other Pages Logo Text Color", "otherPagesLogoText", navbarColors, setNavbarColors)}
+        
+        <button className="btn-primary" onClick={handleSaveNavbarColors} disabled={loading}>
+          Save Navbar Colors
+        </button>
       </div>
 
       {/* Allowed Reviewers Section */}
-      <div style={{ marginBottom: "40px" }}>
+      <div className="cms-section">
         <h3>Allowed Reviewers</h3>
         <p>Manage who can post testimonials for your business.</p>
 
-        <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-          <input type="email" placeholder="Enter email" value={reviewerEmail} onChange={(e) => setReviewerEmail(e.target.value)} />
-          <button onClick={handleAddAllowedEmail}>Add Email</button>
+        <div className="reviewer-controls">
+          <input
+            type="email"
+            placeholder="Enter email"
+            value={reviewerEmail}
+            onChange={(e) => setReviewerEmail(e.target.value)}
+            className="input-field"
+          />
+          <button className="btn-primary" onClick={handleAddAllowedEmail}>
+            Add Email
+          </button>
         </div>
 
         {allowedUsers.length > 0 ? (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <table className="reviewer-table">
             <thead>
               <tr>
                 <th>Email</th>
@@ -441,16 +819,22 @@ function Home() {
               {allowedUsers.map((user) => (
                 <tr key={user.id}>
                   <td>{user.email}</td>
-                  <td>{user.addedAt?.toDate ? user.addedAt.toDate().toLocaleString() : user.addedAt?.toString()}</td>
                   <td>
-                    <button onClick={() => handleRemoveEmail(user.id)} style={{ backgroundColor: "red", color: "white", border: "none", padding: "4px 8px", borderRadius: "6px", cursor: "pointer" }}>Remove</button>
+                    {user.addedAt?.toDate
+                      ? user.addedAt.toDate().toLocaleString()
+                      : user.addedAt?.toString()}
+                  </td>
+                  <td>
+                    <button className="btn-danger" onClick={() => handleRemoveEmail(user.id)}>
+                      Remove
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <p>No allowed reviewers yet.</p>
+          <p className="no-data-message">No allowed reviewers yet.</p>
         )}
       </div>
     </div>

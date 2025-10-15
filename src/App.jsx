@@ -15,7 +15,7 @@ import Home from "./pages/Home"
 import Projects from "./pages/Projects"
 import Auth from "./components/Auth"
 import Servicescms from "./pages/Servicescms"
-import NavbarCMS from "./pages/NavbarCMS"
+// import NavbarCMS from "./pages/NavbarCMS"
 import TenantSelector from "./components/TenantSelector"
 import SuperAdminDashboard from "./pages/SuperAdminDashboard"
 
@@ -83,7 +83,7 @@ function AppContent() {
               <Route path="/" element={<Home />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/servicecms" element={<Servicescms />} />
-              <Route path="/navbarcms" element={<NavbarCMS />} />
+              {/* <Route path="/navbarcms" element={<NavbarCMS />} /> */}
               {isSuperAdmin && <Route path="/superadmin" element={<SuperAdminDashboard />} />}
               <Route path="/auth" element={<Navigate to="/" />} />
               <Route path="*" element={<Navigate to="/" replace />} />
