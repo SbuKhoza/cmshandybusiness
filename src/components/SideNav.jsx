@@ -1,11 +1,10 @@
-"use client"
-
 import { Link } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { auth } from "../config"
 import { signOut } from "firebase/auth"
 import { logout } from "../redux/slices/authSlice"
 import { clearTenant } from "../redux/slices/tenantSlice"
+import "./SideNav.css"
 
 function SideNav() {
   const dispatch = useDispatch()
@@ -27,103 +26,60 @@ function SideNav() {
   }
 
   return (
-    <div
-      style={{
-        width: "250px",
-        backgroundColor: "#2c3e50",
-        color: "white",
-        padding: "20px",
-        minHeight: "100vh",
-      }}
-    >
-      <h2 style={{ marginBottom: "30px" }}>CMS Panel</h2>
+    <div className="sidenav-container">
+      <div className="sidenav-header">
+        <h2>CMS PANEL</h2>
+      </div>
 
       {user && (
-        <div style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #34495e" }}>
-          <p style={{ fontSize: "14px", marginBottom: "5px" }}>
+        <div className="sidenav-user-info">
+          <p>
             <strong>User:</strong> {user.email}
           </p>
-          {isSuperAdmin && (
-            <p style={{ fontSize: "12px", color: "#3498db" }}>
-              <strong>Role:</strong> Superadmin
-            </p>
-          )}
+          {isSuperAdmin && <span className="sidenav-role">Superadmin</span>}
           {currentTenantId && tenantData && (
-            <p style={{ fontSize: "12px", marginTop: "10px" }}>
+            <p style={{ marginTop: "12px" }}>
               <strong>Managing:</strong> {tenantData.businessName || "Tenant"}
             </p>
           )}
         </div>
       )}
 
-      <nav>
-        <ul style={{ listStyle: "none", padding: 0 }}>
+      <nav className="sidenav-nav">
+        <ul>
           {isSuperAdmin && (
-            <li style={{ marginBottom: "15px" }}>
-              <Link to="/superadmin" style={{ color: "white", textDecoration: "none", display: "block" }}>
-                Superadmin Dashboard
-              </Link>
+            <li>
+              <Link to="/superadmin">Superadmin Dashboard</Link>
             </li>
           )}
 
           {currentTenantId && (
             <>
-              <li style={{ marginBottom: "15px" }}>
-                <Link to="/" style={{ color: "white", textDecoration: "none", display: "block" }}>
-                  Home CMS
-                </Link>
+              <li>
+                <Link to="/">Home CMS</Link>
               </li>
-              <li style={{ marginBottom: "15px" }}>
-                <Link to="/servicecms" style={{ color: "white", textDecoration: "none", display: "block" }}>
-                  Services CMS
-                </Link>
+              <li>
+                <Link to="/servicecms">Services CMS</Link>
               </li>
-              <li style={{ marginBottom: "15px" }}>
-              
-              </li>
-              <li style={{ marginBottom: "15px" }}>
-                <Link to="/projects" style={{ color: "white", textDecoration: "none", display: "block" }}>
-                  Projects/Gallery
-                </Link>
+              <li>
+                <Link to="/projects">Projects/Gallery</Link>
               </li>
             </>
           )}
         </ul>
       </nav>
 
-      {currentTenantId && (
-        <button
-          onClick={handleSwitchTenant}
-          style={{
-            marginTop: "20px",
-            padding: "10px",
-            width: "100%",
-            backgroundColor: "#3498db",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Switch Tenant
-        </button>
-      )}
+      <div className="sidenav-actions">
+        {currentTenantId && (
+          <button onClick={handleSwitchTenant} className="sidenav-btn sidenav-btn-switch">
+            Switch Tenant
+          </button>
+        )}
 
-      <button
-        onClick={handleLogout}
-        style={{
-          marginTop: "10px",
-          padding: "10px",
-          width: "100%",
-          backgroundColor: "#e74c3c",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        Logout
-      </button>
+        <button onClick={handleLogout} className="sidenav-btn sidenav-btn-logout">
+          Logout
+        </button>
+      </div>
     </div>
   )
 }

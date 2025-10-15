@@ -1,564 +1,774 @@
-/* Home.css */
-
-.home-container {
-  padding: 40px;
-  max-width: 1400px;
-  margin: 0 auto;
-  background: #f8f9fa;
+/* Home.css styling */
+/* Main content area - positioned next to sidebar */
+.home-main-content {
+  margin-left: 220px; /* Space for sidebar */
+  flex: 1;
+  background: #ffffff; /* White background */
   min-height: 100vh;
 }
 
-.home-container h2 {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 40px;
-  border-bottom: 3px solid #007bff;
-  padding-bottom: 15px;
+/* Container for all CMS content */
+.home-container {
+  padding: 24px 32px; /* Spacing around content */
+  max-width: 1400px; /* Maximum width for readability */
+  margin: 0 auto; /* Center the container */
+  background: #ffffff; /* White background */
 }
 
-.home-container h3 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* Header section at top of page */
+.home-header {
+  margin-bottom: 24px; /* Space below header */
+  padding-bottom: 12px; /* Space inside header */
+  border-bottom: 1px solid #000000; /* Black border instead of gray */
 }
 
-.home-container h3::before {
-  content: '';
-  width: 4px;
-  height: 24px;
-  background: #007bff;
-  border-radius: 2px;
+.home-header h2 {
+  font-size: 20px; /* Header text size */
+  font-weight: 600; /* Semi-bold weight */
+  color: #000000; /* Black text */
+  margin: 0;
+  letter-spacing: 0.5px; /* Slight letter spacing */
 }
 
-.home-container h4 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 15px;
+/* Tab Navigation - horizontal tabs for switching sections */
+.tab-navigation {
+  display: flex; /* Horizontal layout */
+  gap: 0; /* No gap between tabs */
+  margin-bottom: 24px; /* Space below tabs */
+  border-bottom: 1px solid #000000; /* Black border for tab container */
+  overflow-x: auto; /* Allow horizontal scroll on mobile */
 }
 
-/* Section styling */
+/* Individual tab button */
+.tab-button {
+  padding: 12px 20px; /* Space inside tab */
+  background: transparent; /* No background by default */
+  border: none; /* No border */
+  border-bottom: 2px solid transparent; /* Hidden bottom border */
+  color: #666666; /* Gray text for inactive tabs */
+  font-size: 14px; /* Tab text size */
+  font-weight: 500; /* Medium weight */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
+  white-space: nowrap; /* Prevent text wrapping */
+  position: relative;
+  margin-bottom: -1px; /* Overlap with container border */
+}
+
+/* Tab button hover state */
+.tab-button:hover {
+  color: #000000; /* Black text on hover */
+  background: #fafafa; /* Light gray background */
+}
+
+/* Active tab styling */
+.tab-button.active {
+  color: #000000; /* Black text for active tab */
+  border-bottom-color: #000000; /* Black bottom border */
+  background: transparent; /* No background */
+  font-weight: 600; /* Bold weight */
+}
+
+/* Tab Content - container for each tab's content */
+.tab-content {
+  display: none; /* Hidden by default */
+  animation: fadeIn 0.3s ease; /* Fade in animation */
+}
+
+/* Active tab content */
+.tab-content.active {
+  display: block; /* Show active content */
+}
+
+/* Fade in animation for tab switching */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px); /* Start slightly below */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0); /* End at normal position */
+  }
+}
+
+/* Section Styling - cards for each management section */
 .cms-section {
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  margin-bottom: 40px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.3s ease;
+  background: #f9f9f9; /* White background */
+  border: 0.5px solid #0000001a; /* Black border */
+  border-radius: 8px; /* Rounded corners */
+  padding: 24px; /* Space inside section */
+  margin-bottom: 20px; /* Space between sections */
+  transition: all 0.2s ease; /* Smooth transitions */
 }
 
+/* Section hover state */
 .cms-section:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border-color: #00000024; /* Keep black border on hover */
 }
 
-/* Button styling */
+/* Section heading (h3) */
+.cms-section h3 {
+  font-size: 16px; /* Heading size */
+  font-weight: 600; /* Semi-bold */
+  color: #000000; /* Black text */
+  margin: 0 0 16px 0; /* Space below heading */
+  padding-bottom: 12px; /* Space inside heading */
+  border-bottom: 1px solid #000000; /* Black border below heading */
+}
+
+/* Section subheading (h4) */
+.cms-section h4 {
+  font-size: 14px; /* Subheading size */
+  font-weight: 600; /* Semi-bold */
+  color: #000000; /* Black text */
+  margin: 20px 0 12px 0; /* Spacing around subheading */
+}
+
+/* Section sub-subheading (h5) */
+.cms-section h5 {
+  font-size: 13px; /* Smaller heading size */
+  font-weight: 600; /* Semi-bold */
+  color: #333333; /* Dark gray text */
+  margin: 16px 0 8px 0; /* Spacing around heading */
+}
+
+/* Reduced button sizes - smaller padding and font */
+/* Button Styling - Primary button (black background) */
 .btn-primary {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 10px;
-  margin-right: 10px;
+  background: #97d300 !important; /* Black background */
+  color: #ffffff; /* White text */
+  border: 1px solid #ffffff; /* Black border */
+  padding: 6px 12px; /* Reduced space inside button */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 11px !important; /* Reduced button text size */
+  font-weight: 500; /* Medium weight */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
+  margin-top: 8px; /* Space above button */
+  margin-right: 8px; /* Space to right of button */
+  margin-left: 0.5rem;
 }
 
+/* Primary button hover state */
 .btn-primary:hover {
-  background: #0056b3;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  background: #066803c5; /* Slightly lighter black */
 }
 
+/* Primary button active state (when clicked) */
+.btn-primary:active {
+  transform: scale(0.98); /* Slightly shrink on click */
+}
+
+/* Primary button disabled state */
 .btn-primary:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-  transform: none;
+  background: #cccccc; /* Gray background */
+  border-color: #000000; /* Keep black border */
+  color: #666666; /* Gray text */
+  cursor: not-allowed; /* Show not-allowed cursor */
 }
 
+/* Reduced secondary button sizes */
+/* Secondary button (white background, black border) */
 .btn-secondary {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 10px;
-  margin-right: 10px;
+  background: #232323 !important; /* White background */
+  color: #ffffff; /* Black text */
+  border: 1px solid #000000; /* Black border */
+  padding: 6px 12px; /* Reduced space inside button */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 12px !important; /* Reduced button text size */
+  font-weight: 500; /* Medium weight */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
+  margin-top: 8px; /* Space above button */
+  margin-right: 8px; /* Space to right of button */
 }
 
+/* Secondary button hover state */
 .btn-secondary:hover {
-  background: #545b62;
-  transform: translateY(-2px);
+  background: #000000; /* Black background on hover */
+  color: #ffffff; /* White text on hover */
 }
 
+/* Secondary button active state */
+.btn-secondary:active {
+  transform: scale(0.98); /* Slightly shrink on click */
+}
+
+/* Danger button (for delete actions) */
 .btn-danger {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background: #ffffff; /* White background */
+  color: #dc2626; /* Red text */
+  border: 1px solid #dc2626; /* Red border */
+  padding: 6px 12px; /* Reduced space inside button */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 11px; /* Button text size */
+  font-weight: 500; /* Medium weight */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
 }
 
+/* Danger button hover state */
 .btn-danger:hover {
-  background: #c82333;
-  transform: translateY(-1px);
+  background: #dc2626; /* Red background on hover */
+  color: #ffffff; /* White text on hover */
 }
 
-/* Input styling */
+/* Danger button active state */
+.btn-danger:active {
+  transform: scale(0.98); /* Slightly shrink on click */
+}
+
+/* Added !important to force black borders on all input fields */
+/* Input Styling - text input fields */
 .input-field {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 15px;
-  transition: all 0.3s ease;
-  margin-top: 8px;
-  margin-bottom: 15px;
+  width: 100%; /* Full width of container */
+  max-width: 500px; /* Maximum width */
+  padding: 8px 12px; /* Space inside input */
+  border: 0.1px solid #00000042 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 13px; /* Input text size */
+  transition: all 0.2s ease; /* Smooth transitions */
+  margin-top: 6px; /* Space above input */
+  margin-bottom: 12px; /* Space below input */
+  background: #ffffff; /* White background */
+  color: #000000; /* Black text */
 }
 
+/* Input focus state */
 .input-field:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  outline: none; /* Remove default outline */
+  border-color: #000000 !important; /* Keep black border - forced */
 }
 
+/* Added !important to force black borders on textarea */
+/* Textarea field (multi-line input) */
 .textarea-field {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 15px;
-  min-height: 100px;
-  resize: vertical;
-  font-family: inherit;
-  transition: all 0.3s ease;
-  margin-top: 8px;
-  margin-bottom: 15px;
+  width: 100%; /* Full width of container */
+  max-width: 600px; /* Maximum width */
+  padding: 8px 12px; /* Space inside textarea */
+  border: 0.1px solid #00000016 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 13px; /* Textarea text size */
+  min-height: 100px; /* Minimum height */
+  resize: vertical; /* Allow vertical resizing only */
+  font-family: inherit; /* Use same font as page */
+  transition: all 0.2s ease; /* Smooth transitions */
+  margin-top: 6px; /* Space above textarea */
+  margin-bottom: 12px; /* Space below textarea */
+  background: #ffffff; /* White background */
+  color: #000000; /* Black text */
 }
 
+/* Textarea focus state */
 .textarea-field:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  outline: none; /* Remove default outline */
+  border-color: #000000 !important; /* Keep black border - forced */
 }
 
+/* File input area (drag and drop zone) */
 .file-input {
-  margin-top: 10px;
-  padding: 10px;
-  border: 2px dashed #007bff;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  margin-top: 8px; /* Space above file input */
+  padding: 16px; /* Space inside file input */
+  border: 2px dashed #000000; /* Black dashed border */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
+  background: #fafafa; /* Light gray background */
+  text-align: center; /* Center text */
+  font-size: 13px; /* Text size */
+  color: #666666; /* Gray text */
 }
 
+/* File input hover state */
 .file-input:hover {
-  background: #f0f8ff;
-  border-color: #0056b3;
+  background: #f5f5f5; /* Slightly darker gray */
+  border-color: #000000; /* Keep black border */
 }
 
-/* Label styling */
+/* Input label (text above inputs) */
 .input-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #495057;
-  margin-top: 15px;
-  margin-bottom: 5px;
+  display: block; /* Block display */
+  font-size: 12px; /* Label text size */
+  font-weight: 600; /* Semi-bold */
+  color: #000000; /* Black text */
+  margin-top: 16px; /* Space above label */
+  margin-bottom: 6px; /* Space below label */
 }
 
-/* Logo toggle */
+/* Logo Toggle - switch for text/image logo */
 .logo-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  display: inline-flex; /* Inline flex layout */
+  align-items: center; /* Vertical center alignment */
+  gap: 12px; /* Space between items */
+  margin-bottom: 16px; /* Space below toggle */
+  
 }
 
-/* Logo preview */
+/* Logo Preview - shows current logo */
 .logo-preview {
-  margin-top: 30px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 2px solid #e0e0e0;
+  margin-top: 20px; /* Space above preview */
+  padding: 20px; /* Space inside preview */
+  background: #fafafa; /* Light gray background */
+  border: 0.1px solid #00000016; /* Black border */
+  border-radius: 6px; /* Rounded corners */
 }
 
+/* Logo preview heading */
+.logo-preview h4 {
+  margin: 0 0 12px 0; /* Space below heading */
+  font-size: 13px; /* Heading size */
+  color: #000000; /* Black text */
+  font-weight: 600; /* Semi-bold */
+}
+
+/* Logo preview text */
 .logo-preview h2 {
   margin: 0;
-  font-size: 28px;
-  color: #1a1a1a;
+  font-size: 24px; /* Large text size */
+  color: #000000; /* Black text */
+  font-weight: 600; /* Semi-bold */
 }
 
+/* Logo preview image */
 .logo-preview img {
-  max-width: 200px;
-  height: auto;
-  border-radius: 8px;
-  border: 2px solid #e0e0e0;
+  max-width: 200px; /* Maximum image width */
+  height: auto; /* Maintain aspect ratio */
+  border: 1px solid #000000; /* Black border */
+  border-radius: 4px; /* Rounded corners */
 }
 
-/* Image management */
+/* Image Management - grid of uploaded images */
 .image-grid {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  margin-top: 15px;
+  display: grid; /* Grid layout */
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Responsive columns */
+  gap: 12px; /* Space between images */
+  margin-top: 16px; /* Space above grid */
 }
 
+/* Individual image card */
 .image-card {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  position: relative; /* For absolute positioning of buttons */
+  border: 1px solid #000000; /* Black border */
+  border-radius: 6px; /* Rounded corners */
+  overflow: hidden; /* Hide overflow */
+  transition: all 0.2s ease; /* Smooth transitions */
+  background: #ffffff; /* White background */
 }
 
+/* Image card hover state */
 .image-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border-color: #000000; /* Keep black border */
 }
 
+/* Image inside card */
 .image-card img {
-  width: 180px;
-  height: 120px;
-  object-fit: cover;
-  display: block;
+  width: 100%; /* Full width */
+  height: 120px; /* Fixed height */
+  object-fit: cover; /* Cover the area */
+  display: block; /* Block display */
 }
 
+/* Image action buttons container */
 .image-actions {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  gap: 6px;
+  position: absolute; /* Position over image */
+  top: 8px; /* Distance from top */
+  right: 8px; /* Distance from right */
+  display: flex; /* Flex layout */
+  gap: 6px; /* Space between buttons */
 }
 
+/* Individual image action button */
 .image-action-btn {
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.95); /* Semi-transparent white */
+  color: #000000; /* Black text */
+  border: 1px solid #000000; /* Black border */
+  width: 28px; /* Button width */
+  height: 28px; /* Button height */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Show clickable cursor */
+  display: flex; /* Flex layout */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  font-size: 14px; /* Icon size */
+  font-weight: 500; /* Medium weight */
+  transition: all 0.2s ease; /* Smooth transitions */
+  backdrop-filter: blur(4px); /* Blur background */
 }
 
+/* Image action button hover state */
 .image-action-btn:hover {
-  background: rgba(0, 0, 0, 0.9);
-  transform: scale(1.1);
+  background: #000000; /* Black background */
+  color: #ffffff; /* White text */
+  border-color: #000000; /* Black border */
 }
 
-.image-action-btn.delete {
-  background: rgba(220, 53, 69, 0.9);
-}
-
+/* Delete button hover state */
 .image-action-btn.delete:hover {
-  background: rgba(220, 53, 69, 1);
+  background: #dc2626; /* Red background */
+  color: #ffffff; /* White text */
+  border-color: #dc2626; /* Red border */
 }
 
-.image-action-btn.edit {
-  background: rgba(0, 123, 255, 0.9);
-}
-
-.image-action-btn.edit:hover {
-  background: rgba(0, 123, 255, 1);
+/* Right Image Preview - for homepage right image */
+.right-image-container {
+  margin-top: 16px; /* Space above container */
+  position: relative; /* For absolute positioning of buttons */
+  display: inline-block; /* Inline block display */
+  border: 1px solid #000000; /* Black border */
+  border-radius: 6px; /* Rounded corners */
+  overflow: hidden; /* Hide overflow */
 }
 
 /* Right image preview */
-.right-image-container {
-  margin-top: 20px;
-  position: relative;
-  display: inline-block;
-}
-
 .right-image-preview {
-  width: 250px;
-  height: auto;
-  border-radius: 12px;
-  border: 2px solid #e0e0e0;
-  display: block;
+  width: 240px; /* Fixed width */
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Block display */
 }
 
+/* Right image action buttons */
 .right-image-actions {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  display: flex;
-  gap: 8px;
+  position: absolute; /* Position over image */
+  top: 12px; /* Distance from top */
+  right: 12px; /* Distance from right */
+  display: flex; /* Flex layout */
+  gap: 8px; /* Space between buttons */
 }
 
-/* Color picker section */
+/* Color Picker Section - for navbar colors */
 .color-picker-section {
-  margin-top: 20px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  margin-top: 16px; /* Space above section */
+  padding: 16px; /* Space inside section */
+  background: #fafafa; /* Light gray background */
+  border: 0.1px solid #0000002b; /* Black border */
+  border-radius: 6px; /* Rounded corners */
 }
 
+/* Color picker controls container */
 .color-picker-controls {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  margin-top: 10px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
+  display: flex; /* Flex layout */
+  gap: 12px; /* Space between controls */
+  align-items: center; /* Vertical center alignment */
+  margin-top: 12px; /* Space above controls */
+  margin-bottom: 16px; /* Space below controls */
+  flex-wrap: wrap; /* Wrap on small screens */
 }
 
+/* Added !important to force black borders on color inputs */
+/* Color input (color picker) */
 .color-input {
-  width: 60px;
-  height: 45px;
-  cursor: pointer;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  width: 48px; /* Input width */
+  height: 36px; /* Input height */
+  cursor: pointer; /* Show clickable cursor */
+  border: 1px solid #000000 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  transition: all 0.2s ease; /* Smooth transitions */
 }
 
+/* Color input hover state */
 .color-input:hover {
-  border-color: #007bff;
-  transform: scale(1.05);
+  border-color: #000000 !important; /* Keep black border - forced */
 }
 
+/* Added !important to force black borders on color text inputs */
+/* Color text input (hex code input) */
 .color-text-input {
-  padding: 10px 14px;
-  width: 180px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: monospace;
-  transition: all 0.3s ease;
+  padding: 8px 12px; /* Space inside input */
+  width: 140px; /* Input width */
+  border: 1px solid #000000 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 12px; /* Text size */
+  font-family: monospace; /* Monospace font for hex codes */
+  transition: all 0.2s ease; /* Smooth transitions */
+  background: #ffffff; /* White background */
 }
 
+/* Color text input focus state */
 .color-text-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  outline: none; /* Remove default outline */
+  border-color: #000000 !important; /* Keep black border - forced */
 }
 
+/* Opacity control container */
 .opacity-control {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: flex; /* Flex layout */
+  flex-direction: column; /* Vertical layout */
+  gap: 4px; /* Space between items */
 }
 
+/* Opacity label */
 .opacity-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6c757d;
+  font-size: 11px; /* Label text size */
+  font-weight: 600; /* Semi-bold */
+  color: #666666; /* Gray text */
   margin: 0;
 }
 
+/* Opacity slider */
 .opacity-slider {
-  width: 140px;
-  cursor: pointer;
-  height: 6px;
-  border-radius: 3px;
-  outline: none;
+  width: 140px; /* Slider width */
+  cursor: pointer; /* Show clickable cursor */
+  height: 6px; /* Slider height */
+  border-radius: 3px; /* Rounded corners */
+  outline: none; /* Remove default outline */
 }
 
-/* Preset colors */
+/* Preset Colors - predefined color options */
 .preset-colors {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 12px;
+  display: flex; /* Flex layout */
+  align-items: center; /* Vertical center alignment */
+  gap: 8px; /* Space between items */
+  flex-wrap: wrap; /* Wrap on small screens */
+  margin-top: 12px; /* Space above presets */
 }
 
+/* Individual preset color item */
 .preset-color-item {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
+  display: flex; /* Flex layout */
+  align-items: center; /* Vertical center alignment */
+  cursor: pointer; /* Show clickable cursor */
+  gap: 6px; /* Space between swatch and name */
+  padding: 6px 10px; /* Space inside item */
+  border: 1px solid transparent; /* Transparent border by default */
+  border-radius: 6px; /* Rounded corners */
+  transition: all 0.2s ease; /* Smooth transitions */
 }
 
+/* Preset color item hover state */
 .preset-color-item:hover {
-  background: #e9ecef;
+  border-color: #000000; /* Black border on hover */
+  background: #ffffff; /* White background */
 }
 
+/* Preset color swatch (color square) */
 .preset-color-swatch {
-  width: 26px;
-  height: 26px;
-  border: 2px solid #ccc;
-  border-radius: 50%;
-  transition: all 0.3s ease;
+  width: 24px; /* Swatch width */
+  height: 24px; /* Swatch height */
+  border: 1px solid #000000; /* Black border */
+  border-radius: 4px; /* Rounded corners */
+  transition: all 0.2s ease; /* Smooth transitions */
 }
 
-.preset-color-item:hover .preset-color-swatch {
-  transform: scale(1.15);
-  border-color: #007bff;
-}
-
+/* Preset color name */
 .preset-color-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: #495057;
+  font-size: 12px; /* Name text size */
+  font-weight: 500; /* Medium weight */
+  color: #666666; /* Gray text */
 }
 
-/* Select dropdown */
+/* Added !important to force black borders on select fields */
+/* Select Dropdown - for dropdown menus */
 .select-field {
-  padding: 10px 14px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 15px;
-  margin-top: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: white;
+  max-width: 500px; /* Maximum width */
+  padding: 8px 12px; /* Space inside select */
+  border: 1px solid #000000 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 13px; /* Text size */
+  margin-top: 8px; /* Space above select */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
+  background: #ffffff; /* White background */
+  color: #000000; /* Black text */
 }
 
+/* Select focus state */
 .select-field:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  outline: none; /* Remove default outline */
+  border-color: #000000 !important; /* Keep black border - forced */
+}
+
+/* Reviewer Table - for managing reviewers */
+.reviewer-controls {
+  display: flex; /* Flex layout */
+  gap: 12px; /* Space between controls */
+  margin-bottom: 16px; /* Space below controls */
+  align-items: flex-end; /* Align to bottom */
+}
+
+/* Reviewer controls input field */
+.reviewer-controls .input-field {
+  margin: 0; /* Remove default margin */
+  flex: 1; /* Take available space */
+  max-width: none; /* Remove max width */
 }
 
 /* Reviewer table */
-.reviewer-controls {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.reviewer-controls .input-field {
-  margin: 0;
-  flex: 1;
-}
-
 .reviewer-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 100%; /* Full width */
+  border-collapse: collapse; /* Collapse borders */
+  background: #ffffff; /* White background */
+  border: 1px solid #000000; /* Black border */
+  border-radius: 6px; /* Rounded corners */
+  overflow: hidden; /* Hide overflow */
 }
 
+/* Table header */
 .reviewer-table thead {
-  background: #f8f9fa;
+  background: #fafafa; /* Light gray background */
+  color: #000000; /* Black text */
 }
 
+/* Table header cells */
 .reviewer-table th {
-  padding: 14px 16px;
-  text-align: left;
-  font-weight: 600;
-  color: #495057;
-  border-bottom: 2px solid #e0e0e0;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 12px 16px; /* Space inside cell */
+  text-align: left; /* Left align text */
+  font-weight: 600; /* Semi-bold */
+  border-bottom: 1px solid #000000; /* Black border */
+  font-size: 12px; /* Text size */
 }
 
+/* Table data cells */
 .reviewer-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid #f0f0f0;
-  color: #495057;
+  padding: 12px 16px; /* Space inside cell */
+  border-bottom: 1px solid #000000; /* Black border */
+  color: #000000; /* Black text */
+  font-size: 13px; /* Text size */
 }
 
+/* Table body rows */
 .reviewer-table tbody tr {
-  transition: background 0.2s ease;
+  transition: background 0.2s ease; /* Smooth transitions */
 }
 
+/* Table row hover state */
 .reviewer-table tbody tr:hover {
-  background: #f8f9fa;
+  background: #fafafa; /* Light gray background */
 }
 
+/* Last table row (no bottom border) */
 .reviewer-table tbody tr:last-child td {
-  border-bottom: none;
+  border-bottom: none; /* Remove bottom border */
 }
 
+/* No data message (when table is empty) */
 .no-data-message {
-  text-align: center;
-  padding: 40px;
-  color: #6c757d;
-  font-style: italic;
+  text-align: center; /* Center text */
+  padding: 32px; /* Space inside message */
+  color: #999999; /* Gray text */
+  font-size: 14px; /* Text size */
 }
 
-/* Loading state */
+/* Loading State - spinner animation */
 .loading-spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-right: 8px;
+  display: inline-block; /* Inline block display */
+  width: 14px; /* Spinner width */
+  height: 14px; /* Spinner height */
+  border: 2px solid rgba(255, 255, 255, 0.3); /* Light border */
+  border-top-color: #ffffff; /* White top border */
+  border-radius: 50%; /* Circle shape */
+  animation: spin 0.6s linear infinite; /* Spin animation */
+  margin-right: 8px; /* Space to right */
 }
 
+/* Spin animation */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg); /* Full rotation */
+  }
 }
 
-/* No tenant message */
+/* No Tenant Message - shown when no tenant is selected */
 .no-tenant-message {
-  text-align: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin: 40px auto;
-  max-width: 600px;
+  text-align: center; /* Center text */
+  padding: 48px 32px; /* Space inside message */
+  background: #fafafa; /* Light gray background */
+  border: 1px solid #000000; /* Black border */
+  border-radius: 8px; /* Rounded corners */
+  margin: 40px auto; /* Center horizontally */
+  max-width: 500px; /* Maximum width */
+  font-size: 14px; /* Text size */
+  color: #666666; /* Gray text */
+  font-weight: 500; /* Medium weight */
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
+/* Button Preview Container - shows button preview */
+.button-preview-container {
+  margin-top: 16px; /* Space above container */
+  padding: 20px; /* Space inside container */
+  background: #fafafa; /* Light gray background */
+  border: 0.1px solid #00000016; /* Black border */
+  border-radius: 6px; /* Rounded corners */
+}
+
+/* Button preview heading */
+.button-preview-container h5 {
+  margin: 0 0 12px 0; /* Space below heading */
+  font-size: 12px; /* Heading size */
+  font-weight: 600; /* Semi-bold */
+  color: #666666; /* Gray text */
+}
+
+/* Button preview buttons container */
+.button-preview-buttons {
+  display: flex; /* Flex layout */
+  gap: 12px; /* Space between buttons */
+  flex-wrap: wrap; /* Wrap on small screens */
+}
+
+/* Responsive Design - adjustments for different screen sizes */
+@media (max-width: 1024px) {
+  .home-main-content {
+    margin-left: 0; /* Remove sidebar margin on tablets */
+  }
+
   .home-container {
-    padding: 20px;
+    padding: 20px; /* Reduce padding */
   }
 
   .cms-section {
-    padding: 20px;
+    padding: 20px; /* Reduce padding */
+  }
+
+  .tab-button {
+    padding: 10px 16px; /* Reduce padding */
+    font-size: 13px; /* Reduce text size */
+  }
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 16px; /* Further reduce padding on mobile */
+  }
+
+  .cms-section {
+    padding: 16px; /* Further reduce padding */
   }
 
   .color-picker-controls {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: column; /* Stack vertically */
+    align-items: stretch; /* Stretch to full width */
   }
 
   .color-text-input,
   .opacity-slider {
-    width: 100%;
+    width: 100%; /* Full width on mobile */
   }
 
   .image-grid {
-    justify-content: center;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Smaller columns */
+    gap: 10px; /* Reduce gap */
   }
 
   .reviewer-controls {
-    flex-direction: column;
+    flex-direction: column; /* Stack vertically */
   }
 
   .reviewer-table {
-    font-size: 14px;
+    font-size: 12px; /* Reduce text size */
   }
 
   .reviewer-table th,
   .reviewer-table td {
-    padding: 10px 12px;
+    padding: 10px 12px; /* Reduce padding */
+  }
+
+  .tab-navigation {
+    overflow-x: auto; /* Allow horizontal scroll */
+  }
+
+  .tab-button {
+    padding: 10px 14px; /* Reduce padding */
+    font-size: 12px; /* Reduce text size */
   }
 }
