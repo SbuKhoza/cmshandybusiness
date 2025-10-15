@@ -61,6 +61,11 @@ function SideNav() {
               <li>
                 <Link to="/servicecms">Services CMS</Link>
               </li>
+
+              <li>
+                <Link to="/footercms">Footer CMS</Link>
+              </li>
+
               <li>
                 <Link to="/projects">Projects/Gallery</Link>
               </li>
