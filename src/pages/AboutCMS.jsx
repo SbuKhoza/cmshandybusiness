@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import { db, storage, auth } from "../config"
@@ -12,6 +14,8 @@ function AboutCMS() {
     title: "",
     subtitle: "",
     bannerImage: "",
+    headerBgColor: "#667eea",
+    titleColor: "#ffffff",
   })
   const [sections, setSections] = useState([])
   const [editingHeader, setEditingHeader] = useState(false)
@@ -32,8 +36,20 @@ function AboutCMS() {
       if (snap.exists()) {
         setAboutHeader(snap.data())
       } else {
-        await setDoc(headerRef, { title: "", subtitle: "", bannerImage: "" })
-        setAboutHeader({ title: "", subtitle: "", bannerImage: "" })
+        await setDoc(headerRef, { 
+          title: "", 
+          subtitle: "", 
+          bannerImage: "",
+          headerBgColor: "#667eea",
+          titleColor: "#ffffff"
+        })
+        setAboutHeader({ 
+          title: "", 
+          subtitle: "", 
+          bannerImage: "",
+          headerBgColor: "#667eea",
+          titleColor: "#ffffff"
+        })
       }
     })
 
@@ -311,8 +327,50 @@ function AboutCMS() {
               onChange={(e) => setAboutHeader({ ...aboutHeader, subtitle: e.target.value })}
               className="textarea-field"
             />
+            
+            <div className="color-controls">
+              <div className="color-control-group">
+                <label>Header Background Color:</label>
+                <div className="color-input-wrapper">
+                  <input
+                    type="color"
+                    value={aboutHeader.headerBgColor || "#667eea"}
+                    onChange={(e) => setAboutHeader({ ...aboutHeader, headerBgColor: e.target.value })}
+                    className="color-picker"
+                  />
+                  <input
+                    type="text"
+                    value={aboutHeader.headerBgColor || "#667eea"}
+                    onChange={(e) => setAboutHeader({ ...aboutHeader, headerBgColor: e.target.value })}
+                    className="color-text-input"
+                    placeholder="#667eea"
+                  />
+                </div>
+                <small className="color-note">Used when no banner image is set</small>
+              </div>
+
+              <div className="color-control-group">
+                <label>Title Text Color:</label>
+                <div className="color-input-wrapper">
+                  <input
+                    type="color"
+                    value={aboutHeader.titleColor || "#ffffff"}
+                    onChange={(e) => setAboutHeader({ ...aboutHeader, titleColor: e.target.value })}
+                    className="color-picker"
+                  />
+                  <input
+                    type="text"
+                    value={aboutHeader.titleColor || "#ffffff"}
+                    onChange={(e) => setAboutHeader({ ...aboutHeader, titleColor: e.target.value })}
+                    className="color-text-input"
+                    placeholder="#ffffff"
+                  />
+                </div>
+              </div>
+            </div>
+            
             <div className="banner-upload-section">
-              <label>Banner Image:</label>
+              <label>Banner Image (optional):</label>
               <input type="file" accept="image/*" onChange={handleBannerUpload} />
               {uploadProgress.banner && <div className="upload-progress">Uploading: {uploadProgress.banner}%</div>}
               {aboutHeader.bannerImage && (
@@ -340,6 +398,18 @@ function AboutCMS() {
             </p>
             <p>
               <strong>Subtitle:</strong> {aboutHeader.subtitle || "Not set"}
+            </p>
+            <p>
+              <strong>Header Background:</strong> 
+              <span className="color-preview" style={{ backgroundColor: aboutHeader.headerBgColor || "#667eea" }}>
+                {aboutHeader.headerBgColor || "#667eea"}
+              </span>
+            </p>
+            <p>
+              <strong>Title Color:</strong> 
+              <span className="color-preview" style={{ backgroundColor: aboutHeader.titleColor || "#ffffff" }}>
+                {aboutHeader.titleColor || "#ffffff"}
+              </span>
             </p>
             {aboutHeader.bannerImage && (
               <div className="banner-preview">
