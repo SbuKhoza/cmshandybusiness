@@ -69,6 +69,11 @@ function SideNav() {
               <li>
                 <Link to="/projects">Projects/Gallery</Link>
               </li>
+
+              <li>
+                <Link to="/aboutcms">About page management</Link>
+              </li>
+
             </>
           )}
         </ul>

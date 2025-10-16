@@ -1,0 +1,300 @@
+.about-cms-container {
+  margin-left: 220px;
+  max-width: 100%;
+  /* margin: 0 auto; */
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.about-cms-container h2 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.about-cms-container h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #444;
+}
+
+.no-tenant-message {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Header Section */
+.header-section {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.header-display p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.header-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.banner-upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.banner-upload-section label {
+  font-weight: bold;
+  color: #555;
+}
+
+.banner-preview {
+  margin-top: 1rem;
+}
+
+.banner-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+/* Form Elements */
+.input-field,
+.number-input {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.textarea-field {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  resize: vertical;
+  font-family: Arial, sans-serif;
+}
+
+.number-input {
+  width: 150px;
+}
+
+/* Buttons */
+.btn-about-primary,
+.btn-about-secondary,
+.btn-about-danger {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-about-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-about-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-about-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-about-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn-about-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-about-danger:hover {
+  background-color: #c82333;
+}
+
+/* Sections Grid */
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.section-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.section-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.section-card-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.section-content {
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.section-image-container {
+  position: relative;
+  margin: 1rem 0;
+}
+
+.section-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.section-image-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.section-image-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.section-image-btn.edit {
+  background-color: #007bff;
+  color: white;
+}
+
+.section-image-btn.edit:hover {
+  background-color: #0056b3;
+}
+
+.section-image-btn.delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.section-image-btn.delete:hover {
+  background-color: #c82333;
+}
+
+.no-image-text {
+  color: #999;
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+.section-meta {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.section-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Edit Form */
+.section-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Upload Progress */
+.upload-progress {
+  background-color: #e9ecef;
+  border-radius: 4px;
+  padding: 0.5rem;
+  text-align: center;
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Add Section */
+.add-section-section {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.add-section-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Divider */
+.divider {
+  border: none;
+  border-top: 2px solid #e0e0e0;
+  margin: 2rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .about-cms-container {
+    padding: 1rem;
+  }
+
+  .sections-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-about-primary,
+  .btn-about-secondary,
+  .btn-about-danger {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+}
