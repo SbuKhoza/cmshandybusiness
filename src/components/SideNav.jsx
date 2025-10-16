@@ -75,6 +75,10 @@ function SideNav() {
               </li>
 
               <li>
+                <Link to="/newslettercms">News-Letter Manager</Link>
+              </li>
+
+              <li>
                 <Link to="/footercms">Footer Manager</Link>
               </li>
 
