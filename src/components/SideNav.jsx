@@ -56,14 +56,14 @@ function SideNav() {
           {currentTenantId && (
             <>
               <li>
-                <Link to="/">Home CMS</Link>
+                <Link to="/">Homepage Manager</Link>
               </li>
               <li>
-                <Link to="/servicecms">Services CMS</Link>
+                <Link to="/servicecms">Services-page Manager</Link>
               </li>
 
               <li>
-                <Link to="/footercms">Footer CMS</Link>
+                <Link to="/contactcms">Contact-page Manager</Link>
               </li>
 
               <li>
@@ -71,7 +71,11 @@ function SideNav() {
               </li>
 
               <li>
-                <Link to="/aboutcms">About page management</Link>
+                <Link to="/aboutcms">About-page Manager</Link>
+              </li>
+
+              <li>
+                <Link to="/footercms">Footer Manager</Link>
               </li>
 
             </>

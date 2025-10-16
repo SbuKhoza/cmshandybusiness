@@ -20,6 +20,7 @@ import TenantSelector from "./components/TenantSelector"
 import SuperAdminDashboard from "./pages/SuperAdminDashboard"
 import FooterCMS from "./pages/FooterCMS"
 import AboutCMS from "./pages/AboutCMS"
+import ContactCMS from "./pages/ContactCMS"
 
 function AppContent() {
   const dispatch = useDispatch()
@@ -86,6 +87,7 @@ function AppContent() {
               <Route path="/projects" element={<Projects />} />
               <Route path="/aboutcms" element={<AboutCMS />} />
               <Route path="/servicecms" element={<Servicescms />} />
+              <Route path="/contactcms" element={<ContactCMS />} />
               <Route path="/footercms" element={<FooterCMS />} />
               {isSuperAdmin && <Route path="/superadmin" element={<SuperAdminDashboard />} />}
               <Route path="/auth" element={<Navigate to="/" />} />
