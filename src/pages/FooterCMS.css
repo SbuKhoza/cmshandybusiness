@@ -1,284 +1,431 @@
-/* FOOTER CMS PAGE LAYOUT */
-.footer-cms-container {
-  margin-left: 220px; /* Offset for sidebar */
-  max-width: 1200px;
-  width: 85%;
-  margin-right: auto;
-  padding: 2rem;
-  box-sizing: border-box;
-  background-color: #f9f9f9;
+/* Main content area - positioned next to sidebar */
+.ft-footer-cms-container {
+  margin-left: 220px; /* Space for sidebar */
+  flex: 1;
+  background: #ffffff; /* White background */
   min-height: 100vh;
-}
-
-/* HEADINGS */
-.footer-cms-container h2 {
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  color: #333;
-}
-
-/* CMS SECTIONS (Content Blocks) */
-.cms-section {
-  background: #fff;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 320px; /* Fixed width */
-  height: 450px; /* Fixed height */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  padding: 24px 32px; /* Spacing around content */
+  max-width: 1400px; /* Maximum width for readability */
+  margin-right: auto;
   box-sizing: border-box;
 }
 
-.cms-section h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  color: #444;
-  border-bottom: 2px solid #f4b400;
-  padding-bottom: 0.5rem;
+/* Header section */
+.ft-footer-cms-container h2 {
+  font-size: 20px; /* Header text size */
+  font-weight: 600; /* Semi-bold weight */
+  color: #000000; /* Black text */
+  margin: 0 0 24px 0;
+  padding-bottom: 12px; /* Space inside header */
+  border-bottom: 1px solid #000000; /* Black border */
+  letter-spacing: 0.5px; /* Slight letter spacing */
 }
 
-/* LABELS & INPUTS */
-.footer-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  margin-top: 1rem;
-  color: #555;
-}
-
-.footer-input,
-.footer-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-  margin-bottom: 1rem;
+/* CMS Sections - cards for each management section */
+.ft-cms-section {
+  background: #f9f9f9; /* White background */
+  border: 0.5px solid #0000001a; /* Black border */
+  border-radius: 8px; /* Rounded corners */
+  padding: 24px; /* Space inside section */
+  margin-bottom: 20px; /* Space between sections */
+  transition: all 0.2s ease; /* Smooth transitions */
+  width: 100%; /* Full width */
+  height: auto; /* Auto height */
   box-sizing: border-box;
 }
 
-.footer-textarea {
-  resize: vertical;
-  font-family: inherit;
+/* Section hover state */
+.ft-cms-section:hover {
+  border-color: #00000024; /* Keep black border on hover */
 }
 
-/* LINK INPUTS */
-.link-item {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  align-items: center;
-  flex-wrap: wrap;
+/* Section heading (h3) */
+.ft-cms-section h3 {
+  font-size: 16px; /* Heading size */
+  font-weight: 600; /* Semi-bold */
+  color: #000000; /* Black text */
+  margin: 0 0 16px 0; /* Space below heading */
+  padding-bottom: 12px; /* Space inside heading */
+  border-bottom: 1px solid #000000; /* Black border below heading */
 }
 
-.footer-input-inline {
-  flex: 1;
-  min-width: 150px;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 0.95rem;
+/* Section subheading (h4) */
+.ft-cms-section h4 {
+  font-size: 14px; /* Subheading size */
+  font-weight: 600; /* Semi-bold */
+  color: #000000; /* Black text */
+  margin: 20px 0 12px 0; /* Spacing around subheading */
 }
 
-/* BUTTONS */
-.btn-danger-small {
-  padding: 0.5rem 1rem;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
+/* Section sub-subheading (h5) */
+.ft-cms-section h5 {
+  font-size: 13px; /* Smaller heading size */
+  font-weight: 600; /* Semi-bold */
+  color: #333333; /* Dark gray text */
+  margin: 16px 0 8px 0; /* Spacing around heading */
 }
 
-.btn-danger-small:hover {
-  background-color: #c82333;
+/* Labels */
+.ft-footer-label {
+  display: block; /* Block display */
+  font-size: 12px; /* Label text size */
+  font-weight: 600; /* Semi-bold */
+  color: #000000; /* Black text */
+  margin-top: 16px; /* Space above label */
+  margin-bottom: 6px; /* Space below label */
 }
 
-.btn-secondary1 {
-  padding: 0.75rem 1.5rem;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-  margin-top: 0.5rem;
+/* Input Styling - text input fields */
+.ft-footer-input {
+  width: 100%; /* Full width of container */
+  max-width: 500px; /* Maximum width */
+  padding: 8px 12px; /* Space inside input */
+  border: 0.1px solid #00000042 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 13px; /* Input text size */
+  transition: all 0.2s ease; /* Smooth transitions */
+  margin-top: 6px; /* Space above input */
+  margin-bottom: 12px; /* Space below input */
+  background: #ffffff; /* White background */
+  color: #000000; /* Black text */
+  box-sizing: border-box;
 }
 
-.btn-secondary1:hover {
-  background-color: #5a6268;
+/* Input focus state */
+.ft-footer-input:focus {
+  outline: none; /* Remove default outline */
+  border-color: #000000 !important; /* Keep black border - forced */
 }
 
-.btn-primary1 {
-  width: 100%;
-  padding: 1rem;
-  background-color: #f4b400;
-  color: #000;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 700;
-  transition: all 0.3s ease;
-  margin-top: 1rem;
+/* Textarea field (multi-line input) */
+.ft-footer-textarea {
+  width: 100%; /* Full width of container */
+  max-width: 600px; /* Maximum width */
+  padding: 8px 12px; /* Space inside textarea */
+  border: 0.1px solid #00000016 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 13px; /* Textarea text size */
+  min-height: 100px; /* Minimum height */
+  resize: vertical; /* Allow vertical resizing only */
+  font-family: inherit; /* Use same font as page */
+  transition: all 0.2s ease; /* Smooth transitions */
+  margin-top: 6px; /* Space above textarea */
+  margin-bottom: 12px; /* Space below textarea */
+  background: #ffffff; /* White background */
+  color: #000000; /* Black text */
+  box-sizing: border-box;
 }
 
-.btn-primary1:hover {
-  background-color: #d99f00;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(244, 180, 0, 0.3);
+/* Textarea focus state */
+.ft-footer-textarea:focus {
+  outline: none; /* Remove default outline */
+  border-color: #000000 !important; /* Keep black border - forced */
 }
 
-.btn-primary1:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-  transform: none;
+/* Link Item Container */
+.ft-link-item {
+  display: flex; /* Flex layout */
+  gap: 8px; /* Space between items */
+  margin-bottom: 12px; /* Space below link item */
+  align-items: center; /* Vertical center alignment */
+  flex-wrap: wrap; /* Wrap on small screens */
 }
 
-/* COLOR PICKER GRID */
-.color-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+/* Inline Input Fields */
+.ft-footer-input-inline {
+  flex: 1; /* Take available space */
+  min-width: 150px; /* Minimum width */
+  padding: 8px 12px; /* Space inside input */
+  border: 0.1px solid #00000042 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 13px; /* Input text size */
+  transition: all 0.2s ease; /* Smooth transitions */
+  background: #ffffff; /* White background */
+  color: #000000; /* Black text */
+  box-sizing: border-box;
 }
 
-.footer-color-picker {
-  margin-bottom: 1rem;
+/* Inline input focus state */
+.ft-footer-input-inline:focus {
+  outline: none; /* Remove default outline */
+  border-color: #000000 !important; /* Keep black border - forced */
 }
 
-.color-picker-row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 0.5rem;
+/* Button Styling - Primary button */
+.ft-btn-primary1 {
+  background: #97d300 !important; /* Green background */
+  color: #ffffff; /* White text */
+  border: 1px solid #ffffff; /* White border */
+  padding: 6px 12px; /* Reduced space inside button */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 11px !important; /* Reduced button text size */
+  font-weight: 500; /* Medium weight */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
+  margin-top: 8px; /* Space above button */
+  margin-right: 8px; /* Space to right of button */
+  width: auto; /* Auto width */
 }
 
-.color-input-small {
-  width: 60px;
-  height: 40px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  cursor: pointer;
+/* Primary button hover state */
+.ft-btn-primary1:hover {
+  background: #066803c5 !important; /* Darker green */
+  transform: translateY(0); /* Remove transform */
+  box-shadow: none; /* Remove shadow */
 }
 
-.color-text-input-small {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 0.9rem;
+/* Primary button active state (when clicked) */
+.ft-btn-primary1:active {
+  transform: scale(0.98); /* Slightly shrink on click */
 }
 
-.preset-colors-small {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+/* Primary button disabled state */
+.ft-btn-primary1:disabled {
+  background: #cccccc !important; /* Gray background */
+  border-color: #000000; /* Keep black border */
+  color: #666666; /* Gray text */
+  cursor: not-allowed; /* Show not-allowed cursor */
+  transform: none; /* Remove transform */
 }
 
-.preset-color-small {
-  width: 30px;
-  height: 30px;
-  border-radius: 5px;
-  cursor: pointer;
-  border: 2px solid #ddd;
-  transition: transform 0.2s ease;
+/* Secondary button */
+.ft-btn-secondary1 {
+  background: #232323 !important; /* Dark background */
+  color: #ffffff; /* White text */
+  border: 1px solid #000000; /* Black border */
+  padding: 6px 12px; /* Reduced space inside button */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 12px !important; /* Reduced button text size */
+  font-weight: 500; /* Medium weight */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
+  margin-top: 8px; /* Space above button */
+  margin-right: 8px; /* Space to right of button */
 }
 
-.preset-color-small:hover {
-  transform: scale(1.1);
-  border-color: #f4b400;
+/* Secondary button hover state */
+.ft-btn-secondary1:hover {
+  background: #000000 !important; /* Black background on hover */
+  color: #ffffff; /* White text on hover */
 }
 
-/* PREVIEW SECTION */
-.footer-preview {
-  padding: 2rem;
-  border-radius: 8px;
-  margin-top: 1rem;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+/* Secondary button active state */
+.ft-btn-secondary1:active {
+  transform: scale(0.98); /* Slightly shrink on click */
 }
 
-.preview-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
+/* Danger button (for delete actions) */
+.ft-btn-danger-small {
+  background: #ffffff; /* White background */
+  color: #dc2626; /* Red text */
+  border: 1px solid #dc2626; /* Red border */
+  padding: 6px 12px; /* Reduced space inside button */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 11px; /* Button text size */
+  font-weight: 500; /* Medium weight */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
 }
 
-.preview-column h4 {
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
+/* Danger button hover state */
+.ft-btn-danger-small:hover {
+  background: #dc2626; /* Red background on hover */
+  color: #ffffff; /* White text on hover */
 }
 
-.preview-column p {
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
+/* Danger button active state */
+.ft-btn-danger-small:active {
+  transform: scale(0.98); /* Slightly shrink on click */
 }
 
-.preview-bottom {
-  padding: 1rem;
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 1rem;
+/* Color Picker Grid */
+.ft-color-grid {
+  display: grid; /* Grid layout */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
+  gap: 16px; /* Space between items */
 }
 
-.preview-bottom p {
+/* Color Picker Section */
+.ft-footer-color-picker {
+  margin-top: 16px; /* Space above section */
+  padding: 16px; /* Space inside section */
+  background: #fafafa; /* Light gray background */
+  border: 0.1px solid #0000002b; /* Black border */
+  border-radius: 6px; /* Rounded corners */
+}
+
+/* Color Picker Row */
+.ft-color-picker-row {
+  display: flex; /* Flex layout */
+  gap: 12px; /* Space between controls */
+  align-items: center; /* Vertical center alignment */
+  margin-top: 12px; /* Space above controls */
+  margin-bottom: 16px; /* Space below controls */
+  flex-wrap: wrap; /* Wrap on small screens */
+}
+
+/* Color Input (color picker) */
+.ft-color-input-small {
+  width: 48px; /* Input width */
+  height: 36px; /* Input height */
+  cursor: pointer; /* Show clickable cursor */
+  border: 1px solid #000000 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  transition: all 0.2s ease; /* Smooth transitions */
+}
+
+/* Color input hover state */
+.ft-color-input-small:hover {
+  border-color: #000000 !important; /* Keep black border - forced */
+}
+
+/* Color Text Input (hex code input) */
+.ft-color-text-input-small {
+  padding: 8px 12px; /* Space inside input */
+  width: 140px; /* Input width */
+  border: 1px solid #000000 !important; /* Black border - forced */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 12px; /* Text size */
+  font-family: monospace; /* Monospace font for hex codes */
+  transition: all 0.2s ease; /* Smooth transitions */
+  background: #ffffff; /* White background */
+  flex: 1; /* Take available space */
+  box-sizing: border-box;
+}
+
+/* Color text input focus state */
+.ft-color-text-input-small:focus {
+  outline: none; /* Remove default outline */
+  border-color: #000000 !important; /* Keep black border - forced */
+}
+
+/* Preset Colors */
+.ft-preset-colors-small {
+  display: flex; /* Flex layout */
+  align-items: center; /* Vertical center alignment */
+  gap: 8px; /* Space between items */
+  flex-wrap: wrap; /* Wrap on small screens */
+  margin-top: 12px; /* Space above presets */
+}
+
+/* Individual Preset Color */
+.ft-preset-color-small {
+  width: 24px; /* Swatch width */
+  height: 24px; /* Swatch height */
+  border: 1px solid #000000; /* Black border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Show clickable cursor */
+  transition: all 0.2s ease; /* Smooth transitions */
+}
+
+/* Preset color hover state */
+.ft-preset-color-small:hover {
+  transform: scale(1.1); /* Slightly enlarge on hover */
+  border-color: #000000; /* Keep black border */
+}
+
+/* Footer Preview */
+.ft-footer-preview {
+  padding: 24px; /* Space inside preview */
+  border-radius: 6px; /* Rounded corners */
+  margin-top: 16px; /* Space above preview */
+  background: #fff; /* White background */
+  border: 0.1px solid #00000016; /* Black border */
+}
+
+/* Preview Content */
+.ft-preview-content {
+  display: grid; /* Grid layout */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive columns */
+  gap: 24px; /* Space between columns */
+  margin-bottom: 24px; /* Space below content */
+}
+
+/* Preview Column */
+.ft-preview-column h4 {
+  margin-bottom: 12px; /* Space below heading */
+  font-size: 14px; /* Heading size */
+  font-weight: 600; /* Semi-bold */
+}
+
+.ft-preview-column p {
+  margin: 8px 0; /* Space around paragraphs */
+  font-size: 13px; /* Text size */
+}
+
+/* Preview Bottom */
+.ft-preview-bottom {
+  padding: 16px; /* Space inside bottom */
+  text-align: center; /* Center text */
+  border-top: 1px solid rgba(0, 0, 0, 0.1); /* Top border */
+  margin-top: 16px; /* Space above bottom */
+}
+
+.ft-preview-bottom p {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 13px; /* Text size */
 }
 
-/* NO TENANT MESSAGE */
-.no-tenant-message {
-  text-align: center;
-  padding: 3rem;
-  font-size: 1.2rem;
-  color: #666;
+/* No Tenant Message */
+.ft-no-tenant-message {
+  text-align: center; /* Center text */
+  padding: 48px 32px; /* Space inside message */
+  background: #fafafa; /* Light gray background */
+  border: 1px solid #000000; /* Black border */
+  border-radius: 8px; /* Rounded corners */
+  margin: 40px auto; /* Center horizontally */
+  max-width: 500px; /* Maximum width */
+  font-size: 14px; /* Text size */
+  color: #666666; /* Gray text */
+  font-weight: 500; /* Medium weight */
 }
 
-/* RESPONSIVE */
-@media screen and (max-width: 1024px) {
-  .footer-cms-container {
-    margin-left: 0;
-    padding: 1.5rem;
+/* Responsive Design - adjustments for different screen sizes */
+@media (max-width: 1024px) {
+  .ft-footer-cms-container {
+    margin-left: 0; /* Remove sidebar margin on tablets */
+    padding: 20px; /* Reduce padding */
   }
 
-  .cms-section {
-    width: 100%;
-    height: auto;
+  .ft-cms-section {
+    padding: 20px; /* Reduce padding */
+    width: 100%; /* Full width */
+    height: auto; /* Auto height */
+  }
+
+  .ft-color-grid {
+    grid-template-columns: 1fr; /* Single column */
   }
 }
 
-@media screen and (max-width: 768px) {
-  .footer-cms-container {
-    padding: 1rem;
+@media (max-width: 768px) {
+  .ft-footer-cms-container {
+    padding: 16px; /* Further reduce padding on mobile */
   }
 
-  .cms-section {
-    padding: 1.5rem;
+  .ft-cms-section {
+    padding: 16px; /* Further reduce padding */
   }
 
-  .link-item {
-    flex-direction: column;
-    align-items: stretch;
+  .ft-link-item {
+    flex-direction: column; /* Stack vertically */
+    align-items: stretch; /* Stretch to full width */
   }
 
-  .footer-input-inline {
-    width: 100%;
+  .ft-footer-input-inline {
+    width: 100%; /* Full width */
   }
 
-  .color-grid {
-    grid-template-columns: 1fr;
+  .ft-color-picker-row {
+    flex-direction: column; /* Stack vertically */
+    align-items: stretch; /* Stretch to full width */
   }
 
-  .preview-content {
-    grid-template-columns: 1fr;
+  .ft-color-text-input-small {
+    width: 100%; /* Full width on mobile */
+  }
+
+  .ft-preview-content {
+    grid-template-columns: 1fr; /* Single column */
   }
 }

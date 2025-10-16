@@ -115,16 +115,16 @@ function FooterCMS() {
 
   const renderColorPicker = (label, field) => {
     return (
-      <div className="footer-color-picker">
-        <label className="footer-label">{label}:</label>
-        <div className="color-picker-row">
+      <div className="ft-footer-color-picker">
+        <label className="ft-footer-label">{label}:</label>
+        <div className="ft-color-picker-row">
           <input
             type="color"
             value={footerData[field]}
             onChange={(e) =>
               setFooterData({ ...footerData, [field]: e.target.value })
             }
-            className="color-input-small"
+            className="ft-color-input-small"
           />
           <input
             type="text"
@@ -132,17 +132,17 @@ function FooterCMS() {
             onChange={(e) =>
               setFooterData({ ...footerData, [field]: e.target.value })
             }
-            className="color-text-input-small"
+            className="ft-color-text-input-small"
           />
         </div>
-        <div className="preset-colors-small">
+        <div className="ft-preset-colors-small">
           {presetColors.map(({ color, name }) => (
             <div
               key={color}
               onClick={() =>
                 setFooterData({ ...footerData, [field]: color })
               }
-              className="preset-color-small"
+              className="ft-preset-color-small"
               title={name}
               style={{ backgroundColor: color }}
             />
@@ -153,28 +153,28 @@ function FooterCMS() {
   };
 
   if (!currentTenantId) {
-    return <div className="no-tenant-message">Please select a tenant first.</div>;
+    return <div className="ft-no-tenant-message">Please select a tenant first.</div>;
   }
 
   return (
-    <div className="footer-cms-container">
+    <div className="ft-footer-cms-container">
       <h2>Footer Management</h2>
 
       {/* Company Section */}
-      <div className="cms-section">
+      <div className="ft-cms-section">
         <h3>Company Information</h3>
 
-        <label className="footer-label">Company Name</label>
+        <label className="ft-footer-label">Company Name</label>
         <input
           type="text"
           value={footerData.companyName}
           onChange={(e) =>
             setFooterData({ ...footerData, companyName: e.target.value })
           }
-          className="footer-input"
+          className="ft-footer-input"
         />
 
-        <label className="footer-label">Company Description</label>
+        <label className="ft-footer-label">Company Description</label>
         <textarea
           value={footerData.companyDescription}
           onChange={(e) =>
@@ -183,16 +183,16 @@ function FooterCMS() {
               companyDescription: e.target.value,
             })
           }
-          className="footer-textarea"
+          className="ft-footer-textarea"
           rows="3"
         />
       </div>
 
       {/* Quick Links */}
-      <div className="cms-section">
+      <div className="ft-cms-section">
         <h3>Quick Links</h3>
         {footerData.quickLinks.map((link, index) => (
-          <div key={index} className="link-item">
+          <div key={index} className="ft-link-item">
             <input
               type="text"
               placeholder="Link Text"
@@ -200,7 +200,7 @@ function FooterCMS() {
               onChange={(e) =>
                 handleUpdateQuickLink(index, "text", e.target.value)
               }
-              className="footer-input-inline"
+              className="ft-footer-input-inline"
             />
             <input
               type="text"
@@ -209,120 +209,120 @@ function FooterCMS() {
               onChange={(e) =>
                 handleUpdateQuickLink(index, "url", e.target.value)
               }
-              className="footer-input-inline"
+              className="ft-footer-input-inline"
             />
             <button
-              className="btn-danger-small"
+              className="ft-btn-danger-small"
               onClick={() => handleRemoveQuickLink(index)}
             >
               Remove
             </button>
           </div>
         ))}
-        <button className="btn-secondary1" onClick={handleAddQuickLink}>
+        <button className="ft-btn-secondary1" onClick={handleAddQuickLink}>
           + Add Quick Link
         </button>
       </div>
 
       {/* Contact Information */}
-      <div className="cms-section">
+      <div className="ft-cms-section">
         <h3>Contact Information</h3>
 
-        <label className="footer-label">Address</label>
+        <label className="ft-footer-label">Address</label>
         <input
           type="text"
           value={footerData.address}
           onChange={(e) =>
             setFooterData({ ...footerData, address: e.target.value })
           }
-          className="footer-input"
+          className="ft-footer-input"
         />
 
-        <label className="footer-label">Email</label>
+        <label className="ft-footer-label">Email</label>
         <input
           type="email"
           value={footerData.email}
           onChange={(e) =>
             setFooterData({ ...footerData, email: e.target.value })
           }
-          className="footer-input"
+          className="ft-footer-input"
         />
 
-        <label className="footer-label">Phone</label>
+        <label className="ft-footer-label">Phone</label>
         <input
           type="text"
           value={footerData.phone}
           onChange={(e) =>
             setFooterData({ ...footerData, phone: e.target.value })
           }
-          className="footer-input"
+          className="ft-footer-input"
         />
       </div>
 
       {/* Social Media */}
-      <div className="cms-section">
+      <div className="ft-cms-section">
         <h3>Social Media Links</h3>
 
-        <label className="footer-label">Facebook URL</label>
+        <label className="ft-footer-label">Facebook URL</label>
         <input
           type="url"
           value={footerData.facebook}
           onChange={(e) =>
             setFooterData({ ...footerData, facebook: e.target.value })
           }
-          className="footer-input"
+          className="ft-footer-input"
           placeholder="https://facebook.com/yourpage"
         />
 
-        <label className="footer-label">Twitter URL</label>
+        <label className="ft-footer-label">Twitter URL</label>
         <input
           type="url"
           value={footerData.twitter}
           onChange={(e) =>
             setFooterData({ ...footerData, twitter: e.target.value })
           }
-          className="footer-input"
+          className="ft-footer-input"
           placeholder="https://twitter.com/yourhandle"
         />
 
-        <label className="footer-label">LinkedIn URL</label>
+        <label className="ft-footer-label">LinkedIn URL</label>
         <input
           type="url"
           value={footerData.linkedin}
           onChange={(e) =>
             setFooterData({ ...footerData, linkedin: e.target.value })
           }
-          className="footer-input"
+          className="ft-footer-input"
           placeholder="https://linkedin.com/company/yourcompany"
         />
 
-        <label className="footer-label">Instagram URL</label>
+        <label className="ft-footer-label">Instagram URL</label>
         <input
           type="url"
           value={footerData.instagram}
           onChange={(e) =>
             setFooterData({ ...footerData, instagram: e.target.value })
           }
-          className="footer-input"
+          className="ft-footer-input"
           placeholder="https://instagram.com/yourhandle"
         />
       </div>
 
       {/* Bottom Section */}
-      <div className="cms-section">
+      <div className="ft-cms-section">
         <h3>Bottom Section</h3>
 
-        <label className="footer-label">Copyright Text</label>
+        <label className="ft-footer-label">Copyright Text</label>
         <input
           type="text"
           value={footerData.copyrightText}
           onChange={(e) =>
             setFooterData({ ...footerData, copyrightText: e.target.value })
           }
-          className="footer-input"
+          className="ft-footer-input"
         />
 
-        <label className="footer-label">Privacy Policy URL</label>
+        <label className="ft-footer-label">Privacy Policy URL</label>
         <input
           type="text"
           value={footerData.privacyPolicyUrl}
@@ -332,10 +332,10 @@ function FooterCMS() {
               privacyPolicyUrl: e.target.value,
             })
           }
-          className="footer-input"
+          className="ft-footer-input"
         />
 
-        <label className="footer-label">Terms of Service URL</label>
+        <label className="ft-footer-label">Terms of Service URL</label>
         <input
           type="text"
           value={footerData.termsOfServiceUrl}
@@ -345,14 +345,14 @@ function FooterCMS() {
               termsOfServiceUrl: e.target.value,
             })
           }
-          className="footer-input"
+          className="ft-footer-input"
         />
       </div>
 
       {/* Color Settings */}
-      <div className="cms-section">
+      <div className="ft-cms-section">
         <h3>Footer Colors</h3>
-        <div className="color-grid">
+        <div className="ft-color-grid">
           {renderColorPicker("Background Color", "backgroundColor")}
           {renderColorPicker("Text Color", "textColor")}
           {renderColorPicker("Heading Color", "headingColor")}
@@ -364,23 +364,23 @@ function FooterCMS() {
       </div>
 
       {/* Footer Preview */}
-      <div className="cms-section">
+      <div className="ft-cms-section">
         <h3>Footer Preview</h3>
         <div
-          className="footer-preview"
+          className="ft-footer-preview"
           style={{
             backgroundColor: footerData.backgroundColor,
             color: footerData.textColor,
           }}
         >
-          <div className="preview-content">
-            <div className="preview-column">
+          <div className="ft-preview-content">
+            <div className="ft-preview-column">
               <h4 style={{ color: footerData.headingColor }}>
                 {footerData.companyName}
               </h4>
               <p>{footerData.companyDescription}</p>
             </div>
-            <div className="preview-column">
+            <div className="ft-preview-column">
               <h4 style={{ color: footerData.headingColor }}>Quick Links</h4>
               {footerData.quickLinks.slice(0, 3).map((link, i) => (
                 <p key={i} style={{ color: footerData.linkColor }}>
@@ -390,7 +390,7 @@ function FooterCMS() {
             </div>
           </div>
           <div
-            className="preview-bottom"
+            className="ft-preview-bottom"
             style={{ backgroundColor: footerData.bottomBarBgColor }}
           >
             <p>{footerData.copyrightText}</p>
@@ -399,7 +399,7 @@ function FooterCMS() {
       </div>
 
       <button
-        className="btn-primary1"
+        className="ft-btn-primary1"
         onClick={handleSaveFooter}
         disabled={loading}
       >
