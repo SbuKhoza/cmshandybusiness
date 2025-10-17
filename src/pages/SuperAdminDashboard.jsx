@@ -3,14 +3,17 @@
 import { useState, useEffect } from "react"
 import { useSelector } from "react-redux"
 import { db, auth } from "../config"
-import { collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore"
+import { collection, getDocs, doc, setDoc, deleteDoc, updateDoc, serverTimestamp } from "firebase/firestore"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth"
+import "./SuperAdmin.css"
 
 function SuperAdminDashboard() {
   const { isSuperAdmin, user } = useSelector((state) => state.auth)
   const [tenants, setTenants] = useState([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [editingTenant, setEditingTenant] = useState(null)
+  const [viewingTenant, setViewingTenant] = useState(null)
 
   const [superAdminEmail, setSuperAdminEmail] = useState("")
 
@@ -21,7 +24,17 @@ function SuperAdminDashboard() {
     password: "",
     phone: "",
     address: "",
-    subdomain: "", // Added subdomain field
+    subdomain: "",
+    customDomain: "",
+  })
+
+  // Edit tenant form
+  const [editForm, setEditForm] = useState({
+    businessName: "",
+    email: "",
+    phone: "",
+    address: "",
+    subdomain: "",
     customDomain: "",
   })
 
@@ -32,28 +45,28 @@ function SuperAdminDashboard() {
       setSuperAdminEmail(user.email)
     }
 
-    const fetchTenants = async () => {
-      try {
-        const tenantsRef = collection(db, "tenants")
-        const snapshot = await getDocs(tenantsRef)
-        const tenantsList = snapshot.docs.map((doc) => {
-          const data = doc.data()
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
-          }
-        })
-        setTenants(tenantsList)
-      } catch (error) {
-        console.error("Error fetching tenants:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchTenants()
   }, [isSuperAdmin, user])
+
+  const fetchTenants = async () => {
+    try {
+      const tenantsRef = collection(db, "tenants")
+      const snapshot = await getDocs(tenantsRef)
+      const tenantsList = snapshot.docs.map((doc) => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+        }
+      })
+      setTenants(tenantsList)
+    } catch (error) {
+      console.error("Error fetching tenants:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleCreateTenant = async (e) => {
     e.preventDefault()
@@ -103,7 +116,7 @@ function SuperAdminDashboard() {
         email: newTenant.email,
         phone: newTenant.phone || "",
         address: newTenant.address || "",
-        subdomain: newTenant.subdomain || "", // Store subdomain
+        subdomain: newTenant.subdomain || "",
         customDomain: newTenant.customDomain || "",
         createdAt: serverTimestamp(),
         isActive: true,
@@ -130,23 +143,12 @@ function SuperAdminDashboard() {
       }
 
       console.log("[v0] Initializing tenant data...")
-      // Initialize default data for the tenant
       await initializeTenantData(userId)
 
       alert("Tenant created successfully!")
 
       // Refresh tenant list
-      const tenantsRef = collection(db, "tenants")
-      const snapshot = await getDocs(tenantsRef)
-      const tenantsList = snapshot.docs.map((doc) => {
-        const data = doc.data()
-        return {
-          id: doc.id,
-          ...data,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
-        }
-      })
-      setTenants(tenantsList)
+      await fetchTenants()
 
       // Reset form
       setNewTenant({
@@ -175,7 +177,6 @@ function SuperAdminDashboard() {
 
   const initializeTenantData = async (tenantId) => {
     try {
-      // Initialize homepage data
       await setDoc(doc(db, "tenants", tenantId, "data", "homepage"), {
         bannerImages: [],
         rightImage: "",
@@ -188,20 +189,17 @@ function SuperAdminDashboard() {
         shortDescriptionColor: "#444444",
       })
 
-      // Initialize navbar colors
       await setDoc(doc(db, "tenants", tenantId, "data", "navbarColors"), {
         background: "transparent",
         links: "#ffffff",
         logoText: "#ffffff",
       })
 
-      // Initialize services header
       await setDoc(doc(db, "tenants", tenantId, "data", "servicesHeader"), {
         slogan: "Our Services",
         shortDescription: "We provide quality services to meet your needs.",
       })
 
-      // Initialize logo
       await setDoc(doc(db, "tenants", tenantId, "data", "logo"), {
         type: "text",
         text: "Business Logo",
@@ -214,15 +212,122 @@ function SuperAdminDashboard() {
     }
   }
 
+  const handleViewTenant = (tenant) => {
+    setViewingTenant(tenant)
+  }
+
+  const handleEditTenant = (tenant) => {
+    setEditingTenant(tenant.id)
+    setEditForm({
+      businessName: tenant.businessName,
+      email: tenant.email,
+      phone: tenant.phone || "",
+      address: tenant.address || "",
+      subdomain: tenant.subdomain || "",
+      customDomain: tenant.customDomain || "",
+    })
+    setViewingTenant(null)
+  }
+
+  const handleUpdateTenant = async (tenantId) => {
+    if (!editForm.businessName || !editForm.email) {
+      alert("Business name and email are required")
+      return
+    }
+
+    if (editForm.subdomain) {
+      const subdomainRegex = /^[a-z0-9-]+$/
+      if (!subdomainRegex.test(editForm.subdomain)) {
+        alert("Subdomain can only contain lowercase letters, numbers, and hyphens")
+        return
+      }
+    }
+
+    try {
+      const tenantRef = doc(db, "tenants", tenantId)
+      const oldTenant = tenants.find((t) => t.id === tenantId)
+
+      await updateDoc(tenantRef, {
+        businessName: editForm.businessName,
+        email: editForm.email,
+        phone: editForm.phone,
+        address: editForm.address,
+        subdomain: editForm.subdomain,
+        customDomain: editForm.customDomain,
+      })
+
+      // Update subdomain mapping if changed
+      if (oldTenant.subdomain !== editForm.subdomain) {
+        if (oldTenant.subdomain) {
+          await deleteDoc(doc(db, "subdomains", oldTenant.subdomain))
+        }
+        if (editForm.subdomain) {
+          await setDoc(doc(db, "subdomains", editForm.subdomain), {
+            tenantId: tenantId,
+            subdomain: editForm.subdomain,
+            createdAt: serverTimestamp(),
+          })
+        }
+      }
+
+      // Update domain mapping if changed
+      if (oldTenant.customDomain !== editForm.customDomain) {
+        if (oldTenant.customDomain) {
+          await deleteDoc(doc(db, "domains", oldTenant.customDomain))
+        }
+        if (editForm.customDomain) {
+          await setDoc(doc(db, "domains", editForm.customDomain), {
+            tenantId: tenantId,
+            domain: editForm.customDomain,
+            createdAt: serverTimestamp(),
+          })
+        }
+      }
+
+      alert("Tenant updated successfully!")
+      setEditingTenant(null)
+      await fetchTenants()
+    } catch (error) {
+      console.error("Error updating tenant:", error)
+      alert("Failed to update tenant: " + error.message)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingTenant(null)
+    setEditForm({
+      businessName: "",
+      email: "",
+      phone: "",
+      address: "",
+      subdomain: "",
+      customDomain: "",
+    })
+  }
+
   const handleDeleteTenant = async (tenantId) => {
     if (!window.confirm("Are you sure you want to delete this tenant? This action cannot be undone.")) {
       return
     }
 
     try {
+      const tenant = tenants.find((t) => t.id === tenantId)
+
+      // Delete subdomain mapping if exists
+      if (tenant.subdomain) {
+        await deleteDoc(doc(db, "subdomains", tenant.subdomain))
+      }
+
+      // Delete domain mapping if exists
+      if (tenant.customDomain) {
+        await deleteDoc(doc(db, "domains", tenant.customDomain))
+      }
+
+      // Delete tenant document
       await deleteDoc(doc(db, "tenants", tenantId))
-      setTenants(tenants.filter((t) => t.id !== tenantId))
+
       alert("Tenant deleted successfully")
+      await fetchTenants()
     } catch (error) {
       console.error("Error deleting tenant:", error)
       alert("Failed to delete tenant: " + error.message)
@@ -230,190 +335,328 @@ function SuperAdminDashboard() {
   }
 
   if (!isSuperAdmin) {
-    return <div>Access denied. Superadmin privileges required.</div>
+    return <div className="access-denied">Access denied. Superadmin privileges required.</div>
   }
 
   if (loading) {
-    return <div>Loading tenants...</div>
+    return <div className="loading-state">Loading tenants...</div>
   }
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="super-admin-dashboard">
       <h2>Superadmin Dashboard</h2>
 
       {/* Create New Tenant */}
-      <div style={{ marginBottom: "40px", padding: "20px", border: "1px solid #ccc", borderRadius: "8px" }}>
+      <div className="create-tenant-section">
         <h3>Create New Tenant</h3>
-        <form onSubmit={handleCreateTenant}>
-          <div style={{ marginBottom: "10px" }}>
+        <form onSubmit={handleCreateTenant} className="tenant-form">
+          <div className="form-field">
             <label>Business Name (required):</label>
             <input
               type="text"
               value={newTenant.businessName}
               onChange={(e) => setNewTenant({ ...newTenant, businessName: e.target.value })}
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
               required
             />
           </div>
 
-          <div style={{ marginBottom: "10px" }}>
+          <div className="form-field">
             <label>Email (required):</label>
             <input
               type="email"
               value={newTenant.email}
               onChange={(e) => setNewTenant({ ...newTenant, email: e.target.value })}
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
               required
             />
           </div>
 
-          <div style={{ marginBottom: "10px" }}>
+          <div className="form-field">
             <label>Password (required):</label>
             <input
               type="password"
               value={newTenant.password}
               onChange={(e) => setNewTenant({ ...newTenant, password: e.target.value })}
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
               required
             />
           </div>
 
-          <div style={{ marginBottom: "10px" }}>
+          <div className="form-field">
             <label>Phone:</label>
             <input
               type="tel"
               value={newTenant.phone}
               onChange={(e) => setNewTenant({ ...newTenant, phone: e.target.value })}
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             />
           </div>
 
-          <div style={{ marginBottom: "10px" }}>
+          <div className="form-field">
             <label>Address:</label>
             <textarea
               value={newTenant.address}
               onChange={(e) => setNewTenant({ ...newTenant, address: e.target.value })}
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
               rows="3"
             />
           </div>
 
-          <div style={{ marginBottom: "10px" }}>
+          <div className="form-field">
             <label>Subdomain (optional):</label>
             <input
               type="text"
               value={newTenant.subdomain}
               onChange={(e) => setNewTenant({ ...newTenant, subdomain: e.target.value.toLowerCase() })}
               placeholder="e.g., handybusiness"
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             />
-            <small style={{ color: "#666", display: "block", marginTop: "5px" }}>
+            <small>
               Enter a subdomain for this tenant (e.g., handybusiness.vercel.app). Only lowercase letters, numbers, and
               hyphens allowed.
             </small>
           </div>
 
-          <div style={{ marginBottom: "10px" }}>
+          <div className="form-field">
             <label>Custom Domain (optional):</label>
             <input
               type="text"
               value={newTenant.customDomain}
               onChange={(e) => setNewTenant({ ...newTenant, customDomain: e.target.value })}
               placeholder="e.g., clientbusiness.com"
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             />
-            <small style={{ color: "#666", display: "block", marginTop: "5px" }}>
+            <small>
               Enter the custom domain this tenant will use. Leave blank to use subdomain (tenantId.yourdomain.com)
             </small>
           </div>
 
-          <button
-            type="submit"
-            disabled={creating}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: creating ? "not-allowed" : "pointer",
-            }}
-          >
-            {creating ? "Creating..." : "Create Tenant"}
+          <button type="submit" disabled={creating} className="submit-button">
+            {creating ? (
+              <>
+                <span className="loading-spinner"></span>
+                Creating...
+              </>
+            ) : (
+              "Create Tenant"
+            )}
           </button>
         </form>
       </div>
 
       {/* Tenants List */}
-      <div>
+      <div className="tenants-list-section">
         <h3>All Tenants ({tenants.length})</h3>
         {tenants.length === 0 ? (
-          <p>No tenants yet.</p>
+          <p className="empty-state">No tenants yet.</p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            {tenants.map((tenant) => (
-              <div
-                key={tenant.id}
-                style={{
-                  padding: "15px",
-                  border: "1px solid #ccc",
-                  borderRadius: "8px",
-                  backgroundColor: "#f9f9f9",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-                  <div>
-                    <h4 style={{ margin: "0 0 10px 0" }}>{tenant.businessName}</h4>
-                    <p style={{ margin: "5px 0" }}>
-                      <strong>Email:</strong> {tenant.email}
-                    </p>
-                    {tenant.phone && (
-                      <p style={{ margin: "5px 0" }}>
-                        <strong>Phone:</strong> {tenant.phone}
-                      </p>
-                    )}
-                    {tenant.address && (
-                      <p style={{ margin: "5px 0" }}>
-                        <strong>Address:</strong> {tenant.address}
-                      </p>
-                    )}
-                    {tenant.subdomain && (
-                      <p style={{ margin: "5px 0" }}>
-                        <strong>Subdomain:</strong> {tenant.subdomain}
-                      </p>
-                    )}
-                    {tenant.customDomain && (
-                      <p style={{ margin: "5px 0" }}>
-                        <strong>Custom Domain:</strong> {tenant.customDomain}
-                      </p>
-                    )}
-                    <p style={{ margin: "5px 0", fontSize: "12px", color: "#666" }}>
-                      <strong>Created:</strong>{" "}
+          <div className="tenants-table-wrapper">
+            <table className="tenants-table">
+              <thead>
+                <tr>
+                  <th>Business Name</th>
+                  <th>Contact Info</th>
+                  <th>Domain Info</th>
+                  <th>Created</th>
+                  <th>Tenant ID</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tenants.map((tenant) => (
+                  <tr key={tenant.id}>
+                    <td className="tenant-name-cell">{tenant.businessName}</td>
+                    <td>
+                      <div>{tenant.email}</div>
+                      {tenant.phone && <div className="tenant-meta-cell">{tenant.phone}</div>}
+                      {tenant.address && <div className="tenant-meta-cell">{tenant.address}</div>}
+                    </td>
+                    <td>
+                      {tenant.subdomain && (
+                        <div>
+                          <strong>Subdomain:</strong> {tenant.subdomain}
+                        </div>
+                      )}
+                      {tenant.customDomain && (
+                        <div>
+                          <strong>Custom:</strong> {tenant.customDomain}
+                        </div>
+                      )}
+                      {!tenant.subdomain && !tenant.customDomain && (
+                        <span className="tenant-meta-cell">No domain set</span>
+                      )}
+                    </td>
+                    <td className="tenant-meta-cell">
                       {tenant.createdAt ? new Date(tenant.createdAt).toLocaleDateString() : "N/A"}
-                    </p>
-                    <p style={{ margin: "5px 0", fontSize: "12px", color: "#666" }}>
-                      <strong>Tenant ID:</strong> {tenant.id}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteTenant(tenant.id)}
-                    style={{
-                      padding: "8px 15px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+                    </td>
+                    <td className="tenant-meta-cell">{tenant.id}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button onClick={() => handleViewTenant(tenant)} className="btn-secondary">
+                          View
+                        </button>
+                        <button onClick={() => handleEditTenant(tenant)} className="btn-primary">
+                          Edit
+                        </button>
+                        <button onClick={() => handleDeleteTenant(tenant.id)} className="delete-button">
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
+
+      {/* View Modal */}
+      {viewingTenant && (
+        <div className="modal-overlay" onClick={() => setViewingTenant(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Tenant Details</h3>
+              <button className="modal-close" onClick={() => setViewingTenant(null)}>
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-row">
+                <strong>Business Name:</strong>
+                <span>{viewingTenant.businessName}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Email:</strong>
+                <span>{viewingTenant.email}</span>
+              </div>
+              {viewingTenant.phone && (
+                <div className="detail-row">
+                  <strong>Phone:</strong>
+                  <span>{viewingTenant.phone}</span>
+                </div>
+              )}
+              {viewingTenant.address && (
+                <div className="detail-row">
+                  <strong>Address:</strong>
+                  <span>{viewingTenant.address}</span>
+                </div>
+              )}
+              {viewingTenant.subdomain && (
+                <div className="detail-row">
+                  <strong>Subdomain:</strong>
+                  <span>{viewingTenant.subdomain}</span>
+                </div>
+              )}
+              {viewingTenant.customDomain && (
+                <div className="detail-row">
+                  <strong>Custom Domain:</strong>
+                  <span>{viewingTenant.customDomain}</span>
+                </div>
+              )}
+              <div className="detail-row">
+                <strong>Created:</strong>
+                <span>
+                  {viewingTenant.createdAt ? new Date(viewingTenant.createdAt).toLocaleString() : "N/A"}
+                </span>
+              </div>
+              <div className="detail-row">
+                <strong>Tenant ID:</strong>
+                <span>{viewingTenant.id}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Status:</strong>
+                <span>{viewingTenant.isActive ? "Active" : "Inactive"}</span>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setViewingTenant(null)}>
+                Close
+              </button>
+              <button className="btn-primary" onClick={() => handleEditTenant(viewingTenant)}>
+                Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingTenant && (
+        <div className="modal-overlay" onClick={handleCancelEdit}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Edit Tenant</h3>
+              <button className="modal-close" onClick={handleCancelEdit}>
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <form className="tenant-form">
+                <div className="form-field">
+                  <label>Business Name (required):</label>
+                  <input
+                    type="text"
+                    value={editForm.businessName}
+                    onChange={(e) => setEditForm({ ...editForm, businessName: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Email (required):</label>
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Phone:</label>
+                  <input
+                    type="tel"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Address:</label>
+                  <textarea
+                    value={editForm.address}
+                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                    rows="3"
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Subdomain (optional):</label>
+                  <input
+                    type="text"
+                    value={editForm.subdomain}
+                    onChange={(e) => setEditForm({ ...editForm, subdomain: e.target.value.toLowerCase() })}
+                    placeholder="e.g., handybusiness"
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Custom Domain (optional):</label>
+                  <input
+                    type="text"
+                    value={editForm.customDomain}
+                    onChange={(e) => setEditForm({ ...editForm, customDomain: e.target.value })}
+                    placeholder="e.g., clientbusiness.com"
+                  />
+                </div>
+              </form>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={handleCancelEdit}>
+                Cancel
+              </button>
+              <button className="btn-primary" onClick={() => handleUpdateTenant(editingTenant)}>
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
