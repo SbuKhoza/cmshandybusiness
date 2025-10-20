@@ -67,7 +67,7 @@ function SideNav() {
               </li>
 
               <li>
-                <Link to="/projects">Projects/Gallery</Link>
+                <Link to="/projectscms">Projects/Gallery</Link>
               </li>
 
               <li>

@@ -12,7 +12,6 @@ import { setCurrentTenant } from "./redux/slices/tenantSlice"
 
 import SideNav from "./components/SideNav"
 import Home from "./pages/Home"
-import Projects from "./pages/Projects"
 import Auth from "./components/Auth"
 import Servicescms from "./pages/Servicescms"
 // import NavbarCMS from "./pages/NavbarCMS"
@@ -22,6 +21,7 @@ import FooterCMS from "./pages/FooterCMS"
 import AboutCMS from "./pages/AboutCMS"
 import ContactCMS from "./pages/ContactCMS"
 import NewsLetterCMS from "./pages/NewsLetterCMS"
+import ProjectsCMS from "./pages/ProjectsCMS"
 
 function AppContent() {
   const dispatch = useDispatch()
@@ -85,7 +85,7 @@ function AppContent() {
           ) : (
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/projects" element={<Projects />} />
+              <Route path="/projectscms" element={<ProjectsCMS />} />
               <Route path="/aboutcms" element={<AboutCMS />} />
               <Route path="/servicecms" element={<Servicescms />} />
               <Route path="/contactcms" element={<ContactCMS />} />
