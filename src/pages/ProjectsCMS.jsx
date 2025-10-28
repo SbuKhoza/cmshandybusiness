@@ -31,17 +31,17 @@ function ProjectsCMS() {
   const [projectForm, setProjectForm] = useState({
     title: "",
     description: "",
-    imageFile: null,
-    date: new Date().toISOString().split('T')[0]
+    imageFiles: []
   });
 
   // Gallery settings
   const [gallerySettings, setGallerySettings] = useState({
-    displayStyle: "square", // 'square' or 'portrait'
+    displayStyle: "square", // 'square' or 'masonry'
     defaultSort: "date-desc" // 'date-desc', 'date-asc', 'title-asc', 'title-desc'
   });
 
   const [editingProject, setEditingProject] = useState(null);
+  const [selectedImages, setSelectedImages] = useState([]);
 
   // Load projects
   useEffect(() => {
@@ -95,40 +95,46 @@ function ProjectsCMS() {
     }
   };
 
+  // Handle multiple file selection
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setProjectForm({ ...projectForm, imageFiles: files });
+  };
+
   // Add or update project
   const handleSaveProject = async (e) => {
     e.preventDefault();
     
     if (!currentTenantId) return alert("No tenant selected.");
     if (!projectForm.title.trim()) return alert("Please enter a project title.");
-    if (!projectForm.imageFile && !editingProject) return alert("Please select an image.");
+    if (projectForm.imageFiles.length === 0 && !editingProject) {
+      return alert("Please select at least one image.");
+    }
 
     setLoading(true);
 
     try {
-      let imageUrl = editingProject?.imageUrl || "";
+      let imageUrls = editingProject?.imageUrls || [];
 
-      // Upload new image if provided
-      if (projectForm.imageFile) {
-        const imageRef = ref(
-          storage,
-          `projects/${currentTenantId}/${Date.now()}_${projectForm.imageFile.name}`
-        );
-        await uploadBytes(imageRef, projectForm.imageFile);
-        imageUrl = await getDownloadURL(imageRef);
+      // Upload new images if provided
+      if (projectForm.imageFiles.length > 0) {
+        const uploadPromises = projectForm.imageFiles.map(async (file) => {
+          const imageRef = ref(
+            storage,
+            `projects/${currentTenantId}/${Date.now()}_${file.name}`
+          );
+          await uploadBytes(imageRef, file);
+          return await getDownloadURL(imageRef);
+        });
 
-        // Delete old image if editing
-        if (editingProject?.imageUrl) {
-          const oldImageRef = ref(storage, editingProject.imageUrl);
-          await deleteObject(oldImageRef).catch(() => {});
-        }
+        const newImageUrls = await Promise.all(uploadPromises);
+        imageUrls = [...imageUrls, ...newImageUrls];
       }
 
       const projectData = {
         title: projectForm.title.trim(),
         description: projectForm.description.trim(),
-        imageUrl,
-        date: projectForm.date,
+        imageUrls,
         updatedAt: new Date()
       };
 
@@ -151,8 +157,7 @@ function ProjectsCMS() {
       setProjectForm({
         title: "",
         description: "",
-        imageFile: null,
-        date: new Date().toISOString().split('T')[0]
+        imageFiles: []
       });
       setEditingProject(null);
       
@@ -162,7 +167,7 @@ function ProjectsCMS() {
       
     } catch (err) {
       console.error("Error saving project:", err);
-      alert("Failed to save project.");
+      alert("Failed to save project: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -174,9 +179,9 @@ function ProjectsCMS() {
     setProjectForm({
       title: project.title,
       description: project.description,
-      imageFile: null,
-      date: project.date
+      imageFiles: []
     });
+    setSelectedImages([]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -186,23 +191,67 @@ function ProjectsCMS() {
     setProjectForm({
       title: "",
       description: "",
-      imageFile: null,
-      date: new Date().toISOString().split('T')[0]
+      imageFiles: []
     });
+    setSelectedImages([]);
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) fileInput.value = "";
   };
 
-  // Delete project
-  const handleDeleteProject = async (project) => {
-    if (!window.confirm(`Delete "${project.title}"?`)) return;
+  // Toggle image selection
+  const toggleImageSelection = (imageUrl) => {
+    setSelectedImages(prev => 
+      prev.includes(imageUrl) 
+        ? prev.filter(url => url !== imageUrl)
+        : [...prev, imageUrl]
+    );
+  };
+
+  // Delete selected images
+  const handleDeleteSelectedImages = async () => {
+    if (selectedImages.length === 0) return alert("No images selected.");
+    if (!window.confirm(`Delete ${selectedImages.length} selected image(s)?`)) return;
 
     setLoading(true);
     try {
-      // Delete image from storage
-      if (project.imageUrl) {
-        const imageRef = ref(storage, project.imageUrl);
-        await deleteObject(imageRef).catch(() => {});
+      // Delete from storage
+      const deletePromises = selectedImages.map(async (imageUrl) => {
+        const imageRef = ref(storage, imageUrl);
+        return deleteObject(imageRef).catch(() => {});
+      });
+      await Promise.all(deletePromises);
+
+      // Update project document
+      const updatedImageUrls = editingProject.imageUrls.filter(
+        url => !selectedImages.includes(url)
+      );
+
+      const projectRef = doc(db, "tenants", currentTenantId, "projects", editingProject.id);
+      await updateDoc(projectRef, { imageUrls: updatedImageUrls });
+
+      setSelectedImages([]);
+      alert("Selected images deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting images:", err);
+      alert("Failed to delete images.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete entire project
+  const handleDeleteProject = async (project) => {
+    if (!window.confirm(`Delete "${project.title}" and all its images?`)) return;
+
+    setLoading(true);
+    try {
+      // Delete all images from storage
+      if (project.imageUrls && project.imageUrls.length > 0) {
+        const deletePromises = project.imageUrls.map(async (imageUrl) => {
+          const imageRef = ref(storage, imageUrl);
+          return deleteObject(imageRef).catch(() => {});
+        });
+        await Promise.all(deletePromises);
       }
 
       // Delete project document
@@ -232,28 +281,14 @@ function ProjectsCMS() {
         
         <div className="settings-group">
           <label className="settings-label">Display Style:</label>
-          <div className="radio-group">
-            <label className="radio-label">
-              <input
-                type="radio"
-                name="displayStyle"
-                value="square"
-                checked={gallerySettings.displayStyle === "square"}
-                onChange={(e) => setGallerySettings({ ...gallerySettings, displayStyle: e.target.value })}
-              />
-              <span>Square (Same width & height)</span>
-            </label>
-            <label className="radio-label">
-              <input
-                type="radio"
-                name="displayStyle"
-                value="portrait"
-                checked={gallerySettings.displayStyle === "portrait"}
-                onChange={(e) => setGallerySettings({ ...gallerySettings, displayStyle: e.target.value })}
-              />
-              <span>Portrait (Narrow width, taller height)</span>
-            </label>
-          </div>
+          <select
+            value={gallerySettings.displayStyle}
+            onChange={(e) => setGallerySettings({ ...gallerySettings, displayStyle: e.target.value })}
+            className="settings-select"
+          >
+            <option value="square">Square Grid (All same size)</option>
+            <option value="masonry">Masonry Grid (Mixed portrait & landscape)</option>
+          </select>
         </div>
 
         <div className="settings-group">
@@ -304,32 +339,53 @@ function ProjectsCMS() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Project Date</label>
-            <input
-              type="date"
-              value={projectForm.date}
-              onChange={(e) => setProjectForm({ ...projectForm, date: e.target.value })}
-              className="form-input"
-            />
-          </div>
-
-          <div className="form-group">
             <label className="form-label">
-              Project Image * {editingProject && "(Leave empty to keep current image)"}
+              Project Images * (Select multiple images)
             </label>
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => setProjectForm({ ...projectForm, imageFile: e.target.files[0] })}
+              multiple
+              onChange={handleFileChange}
               className="form-input-file"
             />
-            {editingProject && editingProject.imageUrl && (
-              <div className="current-image-preview">
-                <p>Current Image:</p>
-                <img src={editingProject.imageUrl} alt="Current" />
-              </div>
+            {projectForm.imageFiles.length > 0 && (
+              <p className="file-count">{projectForm.imageFiles.length} file(s) selected</p>
             )}
           </div>
+
+          {/* Show existing images when editing */}
+          {editingProject && editingProject.imageUrls && editingProject.imageUrls.length > 0 && (
+            <div className="existing-images">
+              <label className="form-label">
+                Existing Images (Select images to delete)
+              </label>
+              <div className="images-grid">
+                {editingProject.imageUrls.map((imageUrl, index) => (
+                  <div
+                    key={index}
+                    className={`image-item ${selectedImages.includes(imageUrl) ? 'selected' : ''}`}
+                    onClick={() => toggleImageSelection(imageUrl)}
+                  >
+                    <img src={imageUrl} alt={`Image ${index + 1}`} />
+                    {selectedImages.includes(imageUrl) && (
+                      <div className="check-overlay">✓</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {selectedImages.length > 0 && (
+                <button
+                  type="button"
+                  className="btn-danger"
+                  onClick={handleDeleteSelectedImages}
+                  disabled={loading}
+                >
+                  Delete {selectedImages.length} Selected Image(s)
+                </button>
+              )}
+            </div>
+          )}
 
           <div className="form-actions">
             <button type="submit" className="btn-primary" disabled={loading}>
@@ -355,12 +411,23 @@ function ProjectsCMS() {
             {projects.map((project) => (
               <div key={project.id} className="project-card">
                 <div className="project-card-image">
-                  <img src={project.imageUrl} alt={project.title} />
+                  {project.imageUrls && project.imageUrls.length > 0 ? (
+                    <>
+                      <img src={project.imageUrls[0]} alt={project.title} />
+                      {project.imageUrls.length > 1 && (
+                        <div className="image-count-badge">
+                          {project.imageUrls.length} images
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="no-image">No images</div>
+                  )}
                 </div>
                 <div className="project-card-content">
                   <h4>{project.title}</h4>
                   <p className="project-date">
-                    {new Date(project.date).toLocaleDateString()}
+                    {project.createdAt?.toDate ? project.createdAt.toDate().toLocaleDateString() : 'N/A'}
                   </p>
                   {project.description && (
                     <p className="project-description">{project.description}</p>
