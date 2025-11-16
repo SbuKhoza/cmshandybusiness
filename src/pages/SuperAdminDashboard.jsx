@@ -1,5 +1,4 @@
-"use client"
-
+//business app
 import { useState, useEffect } from "react"
 import { useSelector } from "react-redux"
 import { db, auth } from "../config"
