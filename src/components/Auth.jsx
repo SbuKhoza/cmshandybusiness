@@ -1,3 +1,4 @@
+//business app
 import { useState } from "react"
 import { auth } from "../config"
 import { signInWithEmailAndPassword } from "firebase/auth"
