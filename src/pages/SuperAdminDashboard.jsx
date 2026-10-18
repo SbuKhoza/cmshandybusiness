@@ -4,6 +4,9 @@ import { useSelector } from "react-redux"
 import { db, auth } from "../config"
 import { collection, getDocs, doc, setDoc, deleteDoc, updateDoc, serverTimestamp } from "firebase/firestore"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth"
+import { suspendTenant, reactivateTenant, isTenantActive } from "../lib/tenantStatus"
+import TenantStatusBadge from "../components/TenantStatusBadge"
+import SuspendTenantModal from "../components/SuspendTenantModal"
 import "./SuperAdmin.css"
 
 function SuperAdminDashboard() {
@@ -13,6 +16,8 @@ function SuperAdminDashboard() {
   const [creating, setCreating] = useState(false)
   const [editingTenant, setEditingTenant] = useState(null)
   const [viewingTenant, setViewingTenant] = useState(null)
+  const [suspendingTenant, setSuspendingTenant] = useState(null)
+  const [statusBusy, setStatusBusy] = useState(false)
 
   const [superAdminEmail, setSuperAdminEmail] = useState("")
 
@@ -57,6 +62,7 @@ function SuperAdminDashboard() {
           id: doc.id,
           ...data,
           createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+          suspendedAt: data.suspendedAt?.toDate?.()?.toISOString() || null,
         }
       })
       setTenants(tenantsList)
@@ -208,6 +214,35 @@ function SuperAdminDashboard() {
     } catch (error) {
       console.error("[v0] Error initializing tenant data:", error)
       throw error
+    }
+  }
+
+  const handleConfirmSuspend = async (reason) => {
+    if (!suspendingTenant) return
+    setStatusBusy(true)
+    try {
+      await suspendTenant(suspendingTenant.id, reason, user?.uid)
+      setSuspendingTenant(null)
+      await fetchTenants()
+    } catch (error) {
+      console.error("Error suspending tenant:", error)
+      alert("Failed to suspend site: " + error.message)
+    } finally {
+      setStatusBusy(false)
+    }
+  }
+
+  const handleReactivateTenant = async (tenant) => {
+    if (!window.confirm(`Reactivate ${tenant.businessName}? Its site will go back online immediately.`)) return
+    setStatusBusy(true)
+    try {
+      await reactivateTenant(tenant.id, user?.uid)
+      await fetchTenants()
+    } catch (error) {
+      console.error("Error reactivating tenant:", error)
+      alert("Failed to reactivate site: " + error.message)
+    } finally {
+      setStatusBusy(false)
     }
   }
 
@@ -450,6 +485,7 @@ function SuperAdminDashboard() {
                   <th>Business Name</th>
                   <th>Contact Info</th>
                   <th>Domain Info</th>
+                  <th>Status</th>
                   <th>Created</th>
                   <th>Tenant ID</th>
                   <th>Actions</th>
@@ -479,6 +515,12 @@ function SuperAdminDashboard() {
                         <span className="tenant-meta-cell">No domain set</span>
                       )}
                     </td>
+                    <td>
+                      <TenantStatusBadge tenant={tenant} />
+                      {!isTenantActive(tenant) && tenant.suspensionReason && (
+                        <div className="suspension-reason">{tenant.suspensionReason}</div>
+                      )}
+                    </td>
                     <td className="tenant-meta-cell">
                       {tenant.createdAt ? new Date(tenant.createdAt).toLocaleDateString() : "N/A"}
                     </td>
@@ -491,6 +533,23 @@ function SuperAdminDashboard() {
                         <button onClick={() => handleEditTenant(tenant)} className="btn-primary">
                           Edit
                         </button>
+                        {isTenantActive(tenant) ? (
+                          <button
+                            onClick={() => setSuspendingTenant(tenant)}
+                            className="btn-warning"
+                            disabled={statusBusy}
+                          >
+                            Suspend
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleReactivateTenant(tenant)}
+                            className="btn-success"
+                            disabled={statusBusy}
+                          >
+                            Reactivate
+                          </button>
+                        )}
                         <button onClick={() => handleDeleteTenant(tenant.id)} className="delete-button">
                           Delete
                         </button>
@@ -503,6 +562,16 @@ function SuperAdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Suspend Modal */}
+      {suspendingTenant && (
+        <SuspendTenantModal
+          tenant={suspendingTenant}
+          busy={statusBusy}
+          onConfirm={handleConfirmSuspend}
+          onCancel={() => setSuspendingTenant(null)}
+        />
+      )}
 
       {/* View Modal */}
       {viewingTenant && (
@@ -559,7 +628,7 @@ function SuperAdminDashboard() {
               </div>
               <div className="detail-row">
                 <strong>Status:</strong>
-                <span>{viewingTenant.isActive ? "Active" : "Inactive"}</span>
+                <span>{isTenantActive(viewingTenant) ? "Active" : "Suspended"}</span>
               </div>
             </div>
             <div className="modal-footer">
